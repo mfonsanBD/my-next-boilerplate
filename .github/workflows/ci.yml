@@ -1,0 +1,41 @@
+name: Continuous Integration
+
+# this is trigger CI on push and PR for main branch only
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
+
+# this is trigger CI on kinds of branches and PRs
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+          with:
+            node-version: '20.9.0'
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Run liny
+        run: yarn lint
+
+      - name: Run format check
+        run: yarn format
+        
+      - name: Check commit messages
+        uses: wagoid/commitlint-github-action@v3
+          with:
+            configFile: commitlint.config.js
