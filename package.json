@@ -6,11 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint src --ext ts,tsx,js,jsx --report-unused-disable-directives --max-warning 0",
+    "lint": "eslint src --ext ts,tsx,js,jsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint src --ext ts,tsx,js,jsx --fix",
     "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,css,html}'",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "prepare": "husky"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
@@ -64,5 +65,17 @@
   },
   "resolutions": {
     "jackspeak": "2.1.1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "yarn lint && yarn format"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx,js,jsx}": [
+      "yarn lint",
+      "yarn format"
+    ]
   }
 }
