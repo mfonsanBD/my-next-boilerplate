@@ -1,7 +1,10 @@
-import InputPassword from '@/components/InputPassword'
-import InputText from '@/components/InputText'
+'use client'
+
+import InputPassword from '@/components/InputPassword/InputPassword'
+import InputText from '@/components/InputText/InputText'
 import Logo from '@/components/Logo'
 import { Button } from '@/components/ui/button'
+import { EnvelopeSimple } from '@phosphor-icons/react'
 
 export default function Home() {
   return (
@@ -21,12 +24,13 @@ export default function Home() {
         </div>
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6">
+          <form className="w-full space-y-6">
             <InputText
               type="email"
               label="E-mail"
               labelFor="email"
               isRequired
+              icon={<EnvelopeSimple size={20} />}
             />
             <InputPassword
               label="Senha"

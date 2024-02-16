@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import InputWithMask from '.'
+import InputWithMask from './InputWithMask'
 
 const meta: Meta<typeof InputWithMask> = {
   component: InputWithMask,
