@@ -49,6 +49,7 @@ export default function InputPassword({
 
         <input
           id={labelFor}
+          disabled={isDisabled}
           type={isHidden ? 'password' : 'text'}
           autoComplete={labelFor}
           className="block w-full rounded-md border border-zinc-300 py-3 pl-4 pr-12 text-zinc-900 placeholder:text-zinc-400 outline-none sm:text-sm sm:leading-6 focus:outline-none focus:ring-0 focus:border-zinc-300 disabled:opacity-20"

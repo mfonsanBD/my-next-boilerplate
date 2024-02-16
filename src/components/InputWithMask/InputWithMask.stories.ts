@@ -3,6 +3,14 @@ import InputWithMask from '.'
 
 const meta: Meta<typeof InputWithMask> = {
   component: InputWithMask,
+  argTypes: {
+    isRequired: {
+      control: { type: 'boolean' },
+    },
+    isDisabled: {
+      control: { type: 'boolean' },
+    },
+  },
 }
 
 export default meta

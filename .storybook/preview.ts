@@ -24,6 +24,7 @@ const preview: Preview = {
         },
       ],
     },
+    layout: 'fullscreen'
   },
 };
 

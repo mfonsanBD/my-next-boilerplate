@@ -3,6 +3,14 @@ import InputText from '.'
 
 const meta: Meta<typeof InputText> = {
   component: InputText,
+  argTypes: {
+    isRequired: {
+      control: { type: 'boolean' },
+    },
+    isDisabled: {
+      control: { type: 'boolean' },
+    },
+  },
 }
 
 export default meta

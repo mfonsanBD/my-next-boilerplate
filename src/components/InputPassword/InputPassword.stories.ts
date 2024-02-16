@@ -3,6 +3,14 @@ import InputPassword from '.'
 
 const meta: Meta<typeof InputPassword> = {
   component: InputPassword,
+  argTypes: {
+    isRequired: {
+      control: { type: 'boolean' },
+    },
+    isDisabled: {
+      control: { type: 'boolean' },
+    },
+  },
 }
 
 export default meta
