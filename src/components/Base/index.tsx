@@ -25,7 +25,7 @@ export default async function Base({ children }: BaseProps) {
       <Footer />
 
       <div className="absolute">
-        <ToastContainer pauseOnFocusLoss={false} draggable />
+        <ToastContainer pauseOnFocusLoss={false} draggable stacked />
       </div>
     </div>
   )
