@@ -3,6 +3,7 @@ import InputWithMask from '.'
 
 const meta: Meta<typeof InputWithMask> = {
   component: InputWithMask,
+  tags: ['autodocs'],
   argTypes: {
     isRequired: {
       control: { type: 'boolean' },

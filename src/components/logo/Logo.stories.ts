@@ -3,13 +3,14 @@ import Logo from '.'
 
 const meta: Meta<typeof Logo> = {
   component: Logo,
+  tags: ['autodocs'],
   argTypes: {
     color: {
       options: ['colorized', 'white'],
       control: { type: 'radio' },
     },
     size: {
-      options: ['small', 'medium', 'large'],
+      options: ['small', 'medium', 'large', '3xl'],
       control: { type: 'radio' },
     },
   },

@@ -16,7 +16,7 @@ const preview: Preview = {
       values: [
         {
           name: 'light',
-          value: colors.zinc[200],
+          value: colors.zinc[100],
         },
         {
           name: 'dark',
@@ -24,7 +24,6 @@ const preview: Preview = {
         },
       ],
     },
-    layout: 'fullscreen'
   },
 };
 
