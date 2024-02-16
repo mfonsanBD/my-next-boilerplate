@@ -1,5 +1,8 @@
+'use client'
+
 import { Eye, EyeClosed } from '@phosphor-icons/react'
 import clsx from 'clsx'
+import Link from 'next/link'
 import { InputHTMLAttributes, useState } from 'react'
 
 type InputPasswordProps = {
@@ -7,6 +10,7 @@ type InputPasswordProps = {
   labelFor: string
   isRequired?: boolean
   isDisabled?: boolean
+  loginPage?: boolean
 } & InputHTMLAttributes<HTMLInputElement>
 
 export default function InputPassword({
@@ -14,6 +18,7 @@ export default function InputPassword({
   labelFor,
   isRequired,
   isDisabled,
+  loginPage = false,
   ...props
 }: InputPasswordProps) {
   const [isHidden, setIsHidden] = useState(true)
@@ -23,14 +28,25 @@ export default function InputPassword({
   }
   return (
     <div className="w-full">
-      <label
-        htmlFor={labelFor}
-        className={clsx('block text-sm font-medium leading-6 text-gray-900', {
-          'opacity-20': isDisabled,
-        })}
-      >
-        {label}: {isRequired && <span className="text-red-500">*</span>}
-      </label>
+      <div className="w-full flex items-center justify-between">
+        <label
+          htmlFor={labelFor}
+          className={clsx('block text-sm font-medium leading-6 text-gray-900', {
+            'opacity-20': isDisabled,
+          })}
+        >
+          {label}: {isRequired && <span className="text-red-500">*</span>}
+        </label>
+
+        {loginPage && (
+          <Link
+            href="/esqueci-minha-senha"
+            className="text-sm font-semibold text-primary hover:text-blue-900"
+          >
+            esqueci minha senha
+          </Link>
+        )}
+      </div>
 
       <div className="mt-1 relative flex items-center justify-end">
         {!isHidden ? (

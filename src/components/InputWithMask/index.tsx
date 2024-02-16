@@ -1,3 +1,5 @@
+'use client'
+
 import { PatternFormat, PatternFormatProps } from 'react-number-format'
 import clsx from 'clsx'
 import { Input } from '../ui/input'

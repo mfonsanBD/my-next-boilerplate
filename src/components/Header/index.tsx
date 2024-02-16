@@ -1,3 +1,5 @@
+'use client'
+
 import { Fragment } from 'react'
 import { Disclosure } from '@headlessui/react'
 import { List, X } from '@phosphor-icons/react'

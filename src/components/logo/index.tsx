@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 
 export interface LogoProps {
-  size?: 'small' | 'medium' | 'large'
+  size?: 'small' | 'medium' | 'large' | '3xl'
   color?: 'colorized' | 'white'
 }
 
@@ -15,6 +15,7 @@ export default function Logo({ size = 'medium', color = 'white' }: LogoProps) {
         'w-28': size === 'small',
         'w-40': size === 'medium',
         'w-72': size === 'large',
+        'w-[450px]': size === '3xl',
       })}
     >
       <path
