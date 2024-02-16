@@ -1,20 +1,21 @@
+import { PatternFormat, PatternFormatProps } from 'react-number-format'
 import clsx from 'clsx'
-import { InputHTMLAttributes } from 'react'
+import { Input } from '../ui/input'
 
-type InputTextProps = {
+type InputWithMaskProps = {
   label: string
   labelFor: string
   isRequired?: boolean
   isDisabled?: boolean
-} & InputHTMLAttributes<HTMLInputElement>
+} & PatternFormatProps
 
-export default function InputText({
+export default function InputWithMask({
   label,
   labelFor,
   isRequired,
   isDisabled,
   ...props
-}: InputTextProps) {
+}: InputWithMaskProps) {
   return (
     <div className="w-full">
       <label
@@ -27,12 +28,13 @@ export default function InputText({
       </label>
 
       <div className="mt-1">
-        <input
+        <PatternFormat
           id={labelFor}
           disabled={isDisabled}
           autoComplete={labelFor}
-          className="block w-full rounded-md border border-zinc-300 py-3 px-4 text-zinc-900 placeholder:text-zinc-400 outline-none sm:text-sm sm:leading-6 focus:outline-none focus:ring-0 focus:border-zinc-300 disabled:opacity-20 focus-visible:ring-0"
           {...props}
+          customInput={Input}
+          className="block w-full rounded-md border border-zinc-300 py-6 px-4 text-zinc-900 placeholder:text-zinc-400 outline-none sm:text-sm sm:leading-6 focus:outline-none focus:ring-0 focus:border-zinc-300 disabled:opacity-20 focus-visible:ring-0 focus-visible:ring-offset-0"
         />
       </div>
     </div>
