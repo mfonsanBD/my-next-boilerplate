@@ -52,7 +52,6 @@ export const authOptions: AuthOptions = {
           name: existingUser.name,
           email: existingUser.email,
           image: existingUser.image,
-          type: existingUser.type,
         }
       },
     }),
@@ -62,7 +61,6 @@ export const authOptions: AuthOptions = {
       if (user) {
         return {
           ...token,
-          type: user?.type,
           name: user?.name,
           image: user?.image,
         }
@@ -77,7 +75,6 @@ export const authOptions: AuthOptions = {
         ...session,
         user: {
           ...session.user,
-          type: token.type,
           name: token.name,
           image: token.image as string,
         },
