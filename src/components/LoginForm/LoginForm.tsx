@@ -6,7 +6,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CircleNotch, EnvelopeSimple } from '@phosphor-icons/react'
 
-import Logo from '../Logo/Logo'
+// import Logo from '../Logo/Logo'
 import { Button } from '../ui/button'
 import InputText from '../InputText/InputText'
 import InputPassword from '../InputPassword/InputPassword'
@@ -53,7 +53,7 @@ export default function LoginForm() {
   return (
     <div className="w-full">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm flex items-center flex-col">
-        <Logo color="colorized" />
+        {/* <Logo color="colorized" /> */}
 
         <div className="mt-10 space-y-1">
           <h2 className="text-center text-3xl font-extrabold leading-6 tracking-tight text-slate-900">
