@@ -4,7 +4,7 @@ import { useMediaQuery } from 'react-responsive'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
-import Logo from '../Logo'
+import Logo from '../Logo/Logo'
 
 interface AuthProps {
   children: React.ReactNode

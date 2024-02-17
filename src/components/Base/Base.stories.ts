@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import Base from '.'
+import Base from './Base'
 
 const meta: Meta<typeof Base> = {
   component: Base,

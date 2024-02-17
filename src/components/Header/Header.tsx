@@ -1,11 +1,10 @@
 'use client'
 
-import { Fragment } from 'react'
 import { Disclosure } from '@headlessui/react'
 import { List, X } from '@phosphor-icons/react'
-import Logo from '../Logo'
 
-import UserDropdown from '../UserDropdown'
+import UserDropdown from '../UserDropdown/UserDropdown'
+import Logo from '../Logo/Logo'
 
 const navigation = [
   { name: 'Painel de Controle', href: '/painel-controle', current: true },

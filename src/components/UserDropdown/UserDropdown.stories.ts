@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import UserDropdown from '.'
+import UserDropdown from './UserDropdown'
 
 const meta: Meta<typeof UserDropdown> = {
   component: UserDropdown,

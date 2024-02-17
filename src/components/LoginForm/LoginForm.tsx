@@ -6,7 +6,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CircleNotch, EnvelopeSimple } from '@phosphor-icons/react'
 
-import Logo from '../Logo'
+import Logo from '../Logo/Logo'
 import { Button } from '../ui/button'
 import InputText from '../InputText/InputText'
 import InputPassword from '../InputPassword/InputPassword'
