@@ -3,8 +3,7 @@
 import { useMediaQuery } from 'react-responsive'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-
-// import Logo from '../Logo/Logo'
+import Logo from '../Logo/Logo'
 
 interface AuthProps {
   children: React.ReactNode
@@ -25,7 +24,7 @@ export default function AuthBase({ children }: AuthProps) {
 
       <div className="w-full h-full bg-gradient-to-r from-blue-900 to-blue-950 rounded-3xl items-center justify-center hidden md:flex">
         <div className="w-[500px] relative flex items-center justify-center">
-          {/* <Logo size="3xl" /> */}
+          <Logo size="3xl" />
           <div className="w-full h-28 absolute -bottom-20 bg-gradient-to-r from-blue-900/60 to-blue-950/60 border border-white/5 backdrop-blur-sm rounded-lg flex items-center justify-center uppercase font-extrabold text-3xl text-white">
             Associação dos fiscais
             <br />

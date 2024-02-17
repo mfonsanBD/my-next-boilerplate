@@ -4,7 +4,7 @@ import { Disclosure } from '@headlessui/react'
 import { List, X } from '@phosphor-icons/react'
 
 import UserDropdown from '../UserDropdown/UserDropdown'
-// import Logo from '../Logo/Logo'
+import Logo from '../Logo/Logo'
 
 const navigation = [
   { name: 'Painel de Controle', href: '/painel-controle', current: true },
@@ -44,7 +44,7 @@ export default function Header() {
               </div>
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="flex flex-shrink-0 items-center">
-                  {/* <Logo size="small" /> */}
+                  <Logo size="small" />
                 </div>
 
                 <div className="hidden sm:ml-10 sm:flex items-center">
