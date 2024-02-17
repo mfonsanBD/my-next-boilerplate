@@ -1,12 +1,54 @@
 'use client'
 
+import * as z from 'zod'
+import { signIn } from 'next-auth/react'
+import { Controller, useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { EnvelopeSimple } from '@phosphor-icons/react'
-import InputText from '../InputText/InputText'
+
 import Logo from '../Logo'
-import InputPassword from '../InputPassword/InputPassword'
 import { Button } from '../ui/button'
+import InputText from '../InputText/InputText'
+import InputPassword from '../InputPassword/InputPassword'
+import { useRouter } from 'next/navigation'
+import { useCallback } from 'react'
+import { toast } from 'react-toastify'
+
+const schema = z.object({
+  email: z
+    .string()
+    .nonempty('O e-mail é obrigatório.')
+    .email('Formato de e-mail inválido.'),
+  password: z.string().nonempty('A senha é obrigatória.'),
+})
+
+type SignInFormProps = z.infer<typeof schema>
 
 export default function LoginForm() {
+  const router = useRouter()
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting, errors },
+  } = useForm<SignInFormProps>({
+    resolver: zodResolver(schema),
+  })
+
+  const handleSignIn = useCallback(
+    async (data: any) => {
+      const result = await signIn('credentials', { ...data, redirect: false })
+
+      if (result?.error) {
+        toast.error(result?.error)
+      } else {
+        reset()
+        router.replace('/painel-controle')
+      }
+    },
+    [reset, router],
+  )
   return (
     <div className="w-full">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm flex items-center flex-col">
@@ -23,15 +65,61 @@ export default function LoginForm() {
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form className="w-full space-y-6">
-          <InputText
-            type="email"
-            label="E-mail"
-            labelFor="email"
-            isRequired
-            icon={<EnvelopeSimple size={20} />}
-          />
-          <InputPassword label="Senha" labelFor="senha" isRequired loginPage />
+        <form
+          className="w-full space-y-6"
+          onSubmit={handleSubmit(handleSignIn)}
+        >
+          <div className="w-full">
+            <Controller
+              name="email"
+              control={control}
+              defaultValue=""
+              render={({ field: { onChange, value } }) => (
+                <InputText
+                  value={value}
+                  type="email"
+                  label="E-mail"
+                  labelFor="email"
+                  placeholder="Ex.: joaodasilva@gmail.com"
+                  isRequired
+                  onChange={onChange}
+                  disabled={isSubmitting}
+                  isDisabled={isSubmitting}
+                  icon={<EnvelopeSimple size={20} />}
+                />
+              )}
+            />
+
+            {errors.email && (
+              <small className="text-red-500">{errors.email.message}</small>
+            )}
+          </div>
+
+          <div className="w-full">
+            <Controller
+              name="password"
+              control={control}
+              defaultValue=""
+              render={({ field: { onChange, value } }) => (
+                <InputPassword
+                  value={value}
+                  label="Senha"
+                  labelFor="password"
+                  placeholder="***********"
+                  isRequired
+                  onChange={onChange}
+                  disabled={isSubmitting}
+                  isDisabled={isSubmitting}
+                  loginPage
+                />
+              )}
+            />
+
+            {errors.password && (
+              <small className="text-red-500">{errors.password.message}</small>
+            )}
+          </div>
+
           <Button className="w-full text-white">Acessar</Button>
         </form>
 

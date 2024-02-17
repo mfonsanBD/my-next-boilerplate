@@ -1,5 +1,9 @@
 'use client'
 
+import { useMediaQuery } from 'react-responsive'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+
 import Logo from '../Logo'
 
 interface AuthProps {
@@ -7,8 +11,16 @@ interface AuthProps {
 }
 
 export default function AuthBase({ children }: AuthProps) {
+  const isMobile = useMediaQuery({
+    query: '(max-width: 768px)',
+  })
+
+  const toastStyle = {
+    width: isMobile ? '80%' : '30%',
+  }
+
   return (
-    <div className="h-screen px-6 py-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 items-center">
+    <div className="w-full h-screen px-6 py-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 items-center">
       {children}
 
       <div className="w-full h-full bg-gradient-to-r from-blue-900 to-blue-950 rounded-3xl items-center justify-center hidden md:flex">
@@ -20,6 +32,17 @@ export default function AuthBase({ children }: AuthProps) {
             de Armação dos Búzios
           </div>
         </div>
+      </div>
+
+      <div className="w-full absolute bottom-0">
+        <ToastContainer
+          pauseOnFocusLoss={false}
+          draggable
+          stacked
+          position="bottom-center"
+          style={toastStyle}
+          toastStyle={{ fontFamily: 'Poppins' }}
+        />
       </div>
     </div>
   )

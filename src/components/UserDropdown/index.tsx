@@ -3,6 +3,7 @@ import { Separator } from '../ui/separator'
 import { Button } from '../ui/button'
 import { Menu, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
+import { signOut } from 'next-auth/react'
 
 const userNav = [
   { name: 'Perfil', href: '/perfil' },
@@ -60,6 +61,12 @@ export default function UserDropdown() {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() =>
+                  signOut({
+                    redirect: true,
+                    callbackUrl: '/',
+                  })
+                }
                 className="w-full justify-start rounded-t-none rounded-b-md hover:bg-red-50 hover:text-red-600 px-4"
               >
                 Sair

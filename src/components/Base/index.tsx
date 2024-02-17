@@ -3,17 +3,19 @@ import Header from '../Header'
 import Footer from '../Footer'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-// import { getServerSession } from 'next-auth'
-// import { authOptions } from '@/lib/auth'
-// import { redirect } from 'next/navigation'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 
 interface BaseProps {
   children: React.ReactNode
 }
 
 export default async function Base({ children }: BaseProps) {
-  // const data = await getServerSession(authOptions)
-  // if (!data) redirect('/')
+  const data = await getServerSession(authOptions)
+  if (!data) {
+    redirect('/')
+  }
 
   return (
     <div className="bg-[#EFF2F4] h-screen flex flex-col justify-between">
@@ -25,7 +27,14 @@ export default async function Base({ children }: BaseProps) {
       <Footer />
 
       <div className="absolute">
-        <ToastContainer pauseOnFocusLoss={false} draggable stacked />
+        <ToastContainer
+          pauseOnFocusLoss={false}
+          draggable
+          stacked
+          position="bottom-center"
+          style={{ width: '30%' }}
+          toastStyle={{ fontFamily: 'Poppins' }}
+        />
       </div>
     </div>
   )
