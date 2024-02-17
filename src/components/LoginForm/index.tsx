@@ -4,7 +4,7 @@ import * as z from 'zod'
 import { signIn } from 'next-auth/react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { EnvelopeSimple } from '@phosphor-icons/react'
+import { CircleNotch, EnvelopeSimple } from '@phosphor-icons/react'
 
 import Logo from '../Logo'
 import { Button } from '../ui/button'
@@ -120,7 +120,20 @@ export default function LoginForm() {
             )}
           </div>
 
-          <Button className="w-full text-white">Acessar</Button>
+          <Button
+            className="w-full text-white"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <div className="flex items-center gap-2">
+                <CircleNotch size={24} className="animate-spin" />
+                <p>Aguarde um momento</p>
+              </div>
+            ) : (
+              'Acessar'
+            )}
+          </Button>
         </form>
 
         <p className="mt-10 text-center text-sm text-gray-500">
