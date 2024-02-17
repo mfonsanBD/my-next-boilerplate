@@ -13,6 +13,7 @@ import InputPassword from '../InputPassword/InputPassword'
 import { useRouter } from 'next/navigation'
 import { useCallback } from 'react'
 import { toast } from 'react-toastify'
+import Link from 'next/link'
 
 const schema = z.object({
   email: z
@@ -138,12 +139,12 @@ export default function LoginForm() {
 
         <p className="mt-10 text-center text-sm text-gray-500">
           Não é associado?{' '}
-          <a
+          <Link
             href="/cadastro"
-            className="font-semibold leading-6 text-primary hover:text-blue-900"
+            className="font-medium leading-6 text-primary hover:text-blue-900"
           >
             Cadastre-se agora
-          </a>
+          </Link>
         </p>
       </div>
     </div>

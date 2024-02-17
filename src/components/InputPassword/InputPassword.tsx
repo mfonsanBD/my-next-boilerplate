@@ -41,7 +41,7 @@ export default function InputPassword({
         {loginPage && (
           <Link
             href="/esqueci-minha-senha"
-            className="text-sm font-semibold text-primary hover:text-blue-900"
+            className="text-sm font-medium text-primary hover:text-blue-900"
           >
             esqueci minha senha
           </Link>
