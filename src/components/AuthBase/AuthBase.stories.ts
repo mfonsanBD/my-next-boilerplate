@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import AuthBase from '.'
+import AuthBase from './AuthBase'
 
 const meta: Meta<typeof AuthBase> = {
   component: AuthBase,
