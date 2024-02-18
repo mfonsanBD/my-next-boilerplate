@@ -1,6 +1,11 @@
 import Base from '@/components/Base/Base'
 import { AddButton } from '@/components/Postura/Ambulantes/AddButton'
 import { AmbulantesComp } from '@/components/Postura/Ambulantes/ambulantes'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: `${process.env.NEXT_PUBLIC_APP_NAME} - Postura - Ambulantes`,
+}
 
 const Ambulantes = () => (
   <Base>

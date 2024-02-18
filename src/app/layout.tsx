@@ -6,7 +6,7 @@ import './globals.css'
 const poppins = Poppins({ subsets: ['latin'], weight: ['400', '500', '700'] })
 
 export const metadata: Metadata = {
-  title: 'AFISCAB - Login',
+  title: `${process.env.NEXT_PUBLIC_APP_NAME} - Login`,
 }
 
 export default function RootLayout({
