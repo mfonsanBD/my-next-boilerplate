@@ -1,6 +1,5 @@
 'use client'
 
-import { AddAmbulante } from '@/actions/postura/ambulantes'
 import InputText from '@/components/InputText/InputText'
 import InputWithMask from '@/components/InputWithMask/InputWithMask'
 import SelectDropdown from '@/components/SelectDropdown/SelectDropdown'
@@ -24,7 +23,7 @@ import { useCallback, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import * as z from 'zod'
-import useSWR from 'swr'
+import useSWR, { mutate } from 'swr'
 
 const schema = z.object({
   name: z.string().nonempty('O campo Nome Completo é obrigatório.'),
@@ -81,17 +80,20 @@ export function AddButton() {
       }
       // eslint-disable-next-line no-unused-vars
       const { activityType: newActivityType, ...rest } = newdata
-      const result = await AddAmbulante(rest)
 
-      if (result.errors.length > 0) {
-        result.errors.map(({ message }) => {
-          toast.error(message)
+      await axios
+        .post('/api/postura/ambulantes', rest)
+        .then((response) => {
+          setOpen(false)
+          reset()
+          toast.success(response.data.message)
+          mutate('/api/postura/ambulantes')
         })
-      } else if (result.ambulante) {
-        setOpen(false)
-        reset()
-        toast.success('Ambulante cadastrado com sucesso!')
-      }
+        .catch((error) => {
+          error.response.data.errors.map(({ message }: { message: string }) => {
+            toast.error(message)
+          })
+        })
     },
     [reset],
   )
