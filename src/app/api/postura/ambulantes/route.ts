@@ -89,3 +89,30 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  const { id } = await request.json()
+
+  try {
+    await db.streetVendor.delete({
+      where: {
+        id,
+      },
+    })
+
+    return NextResponse.json(
+      {
+        message: 'Ambulante excluído com sucesso!',
+      },
+      { status: 200 },
+    )
+  } catch (error) {
+    return NextResponse.json(
+      {
+        message:
+          'Não foi possível excluir o ambulante. Tente novamente mais tarde.',
+      },
+      { status: 400 },
+    )
+  }
+}

@@ -112,11 +112,11 @@ export function DataTableRowActions<TData>({
     setLoadingDelete(true)
 
     await axios
-      .delete('/api/assemblies', { data: { id: data } })
+      .delete('/api/postura/ambulantes', { data: { id: data } })
       .then((response) => {
         setOpenDelete(false)
         toast.success(response.data.message)
-        mutate('/api/assemblies')
+        mutate('/api/postura/ambulantes')
       })
       .catch((error) => {
         toast.error(error.response.data.message)
@@ -138,13 +138,19 @@ export function DataTableRowActions<TData>({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
-          <DropdownMenuItem onClick={() => handleEditDialog(ambulante)}>
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={() => handleEditDialog(ambulante)}
+          >
             Editar
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem onClick={() => handleDeleteDialog(ambulante)}>
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={() => handleDeleteDialog(ambulante)}
+          >
             Excluir
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -217,15 +223,15 @@ export function DataTableRowActions<TData>({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Você está excluindo uma assembléia!
+              Você está excluindo um ambulante!
             </AlertDialogTitle>
 
             <AlertDialogDescription>
-              A assembléia{' '}
+              O ambulante{' '}
               <span className="font-medium text-red-600">
                 {selectedToDelete?.nome}
               </span>{' '}
-              está sendo excluída, você tem certeza que deseja excluí-la?
+              está sendo excluído, você tem certeza que deseja excluí-lo?
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -233,6 +239,7 @@ export function DataTableRowActions<TData>({
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <Button
               type="button"
+              variant="destructive"
               disabled={loadingDelete}
               onClick={() => handleDelete(selectedToDelete?.id)}
             >
