@@ -28,12 +28,10 @@ export default async function Base({ children }: BaseProps) {
 
       <div className="absolute">
         <ToastContainer
-          pauseOnFocusLoss={false}
-          draggable
-          stacked
           position="bottom-center"
-          style={{ width: '30%' }}
+          style={{ width: '30%', zIndex: 90 }}
           toastStyle={{ fontFamily: 'Poppins' }}
+          closeOnClick
         />
       </div>
     </div>

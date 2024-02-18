@@ -38,18 +38,17 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  password      String
-  emailVerified DateTime?
-  image         String?
-  type          String
-  status        String    @default("ativo")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-  sessions      Session[]
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  password  String
+  image     String?
+  type      String
+  status    String    @default("ativo")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  accounts  Account[]
+  sessions  Session[]
 }
 
 model VerificationRequest {
@@ -61,4 +60,30 @@ model VerificationRequest {
   updatedAt  DateTime @updatedAt
 
   @@unique([identifier, token])
+}
+
+model StreetVendorActivityType {
+  id           String         @id @default(cuid())
+  name         String
+  StreetVendor StreetVendor[]
+}
+
+model StreetVendor {
+  id             String                   @id @default(cuid())
+  name           String
+  cpf            String                   @unique
+  cep            String
+  place          String
+  complement     String?
+  number         String?
+  neighborhood   String
+  city           String
+  phone          String
+  email          String                   @unique
+  activityTypeId String
+  activityType   StreetVendorActivityType @relation(fields: [activityTypeId], references: [id])
+  notes          String?
+  status         String                   @default("ativo")
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
 }

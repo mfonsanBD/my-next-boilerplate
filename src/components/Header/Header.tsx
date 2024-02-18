@@ -5,18 +5,27 @@ import { List, X } from '@phosphor-icons/react'
 
 import UserDropdown from '../UserDropdown/UserDropdown'
 import Logo from '../Logo/Logo'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 const navigation = [
-  { name: 'Painel de Controle', href: '/painel-controle', current: true },
-  { name: 'Postura', href: '/postura', current: false },
-  { name: 'Transporte', href: '/transporte', current: false },
-  { name: 'Meio Ambiente', href: '/meio-ambiente', current: false },
-  { name: 'Urbanismo', href: '/urbanismo', current: false },
   {
-    name: 'Vigilância Sanitária',
-    href: '/vigilancia-sanitaria',
-    current: false,
+    name: 'Painel de Controle',
+    href: '/painel-controle',
+    area: 'painel-controle',
   },
+  { name: 'Postura', href: '/postura/ambulantes', area: 'postura' },
+  {
+    name: 'Transporte',
+    href: '/transporte/permissionario-van',
+    area: 'transporte',
+  },
+  // { name: 'Meio Ambiente', href: '/meio-ambiente' },
+  // { name: 'Urbanismo', href: '/urbanismo' },
+  // {
+  //   name: 'Vigilância Sanitária',
+  //   href: '/vigilancia-sanitaria',
+  // },
 ]
 
 function classNames(...classes: any) {
@@ -24,6 +33,7 @@ function classNames(...classes: any) {
 }
 
 export default function Header() {
+  const pathname = usePathname()
   return (
     <Disclosure as="nav" className="bg-blue-900">
       {({ open }) => (
@@ -50,19 +60,21 @@ export default function Header() {
                 <div className="hidden sm:ml-10 sm:flex items-center">
                   <div className="flex space-x-2">
                     {navigation.map((item) => (
-                      <a
+                      <Link
                         key={item.name}
                         href={item.href}
                         className={classNames(
-                          item.current
+                          pathname.includes(item.area)
                             ? 'bg-blue-950 text-white'
                             : 'text-gray-300 hover:bg-blue-800 hover:text-white',
                           'rounded-md px-4 py-2 text-sm font-medium',
                         )}
-                        aria-current={item.current ? 'page' : undefined}
+                        aria-current={
+                          pathname.includes(item.area) ? 'page' : undefined
+                        }
                       >
                         {item.name}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -79,12 +91,12 @@ export default function Header() {
                   as="a"
                   href={item.href}
                   className={classNames(
-                    item.current
+                    pathname === item.href
                       ? 'bg-blue-950 text-white'
                       : 'text-gray-300 hover:bg-blue-800 hover:text-white',
                     'block rounded-md px-3 py-3 text-base font-medium',
                   )}
-                  aria-current={item.current ? 'page' : undefined}
+                  aria-current={pathname === item.href ? 'page' : undefined}
                 >
                   {item.name}
                 </Disclosure.Button>
