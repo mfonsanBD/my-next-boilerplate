@@ -31,8 +31,8 @@ const schema = z.object({
   cpf: z.string().nonempty('O campo CPF é obrigatório.'),
   cep: z.string().nonempty('O campo CEP é obrigatório.'),
   place: z.string().nonempty('O campo Logradouro é obrigatório.'),
-  complement: z.string().nullable(),
-  number: z.string().nullable(),
+  complement: z.string().optional(),
+  number: z.string().optional(),
   neighborhood: z.string().nonempty('O campo Bairro é obrigatório.'),
   city: z.string().nonempty('O campo Cidade é obrigatório.'),
   phone: z.string().nonempty('O campo Telefone é obrigatório'),
@@ -41,7 +41,7 @@ const schema = z.object({
     .nonempty('O campo e-mail é obrigatório.')
     .email('Informe um e-mail válido.'),
   activityType: z.string().nonempty('O campo Tipo de Atividade é obrigatório'),
-  notes: z.string().nullable(),
+  notes: z.string().optional(),
 })
 
 export type AmbulanteFormProps = z.infer<typeof schema>
