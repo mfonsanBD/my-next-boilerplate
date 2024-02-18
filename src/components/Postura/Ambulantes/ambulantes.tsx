@@ -13,7 +13,7 @@ export function AmbulantesComp() {
   const ambulantes = AmbulantesMapper(data?.ambulantes)
 
   return (
-    <div className="bg-white p-10 rounded-lg">
+    <div className="bg-white p-4 sm:p-10 rounded-lg">
       <DataTable data={ambulantes} columns={columns} isLoading={isLoading} />
     </div>
   )
