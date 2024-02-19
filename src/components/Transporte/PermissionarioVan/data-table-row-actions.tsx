@@ -27,9 +27,9 @@ import {
 } from '@/components/ui/alert-dialog'
 import axios from 'axios'
 import { mutate } from 'swr'
-import { ambulantes } from './schema'
 import { toast } from 'react-toastify'
 import InputText from '@/components/InputText/InputText'
+import { permissionarios } from './schema'
 import clsx from 'clsx'
 
 const schema = z.object({
@@ -43,7 +43,7 @@ interface DataTableRowActionsProps<TData> {
   row: Row<TData>
 }
 
-type SelectedData = z.infer<typeof ambulantes>
+type SelectedData = z.infer<typeof permissionarios>
 
 export function DataTableRowActions<TData>({
   row,
@@ -60,15 +60,15 @@ export function DataTableRowActions<TData>({
 
   const [openView, setOpenView] = useState(false)
 
-  const ambulante = ambulantes.parse(row.original)
+  const permissionario = permissionarios.parse(row.original)
 
-  const handleEditDialog = (ambulante: SelectedData) => {
-    setSelectedToEdit(ambulante)
+  const handleEditDialog = (permissionario: SelectedData) => {
+    setSelectedToEdit(permissionario)
     setOpenEdit(true)
   }
 
-  const handleDeleteDialog = (ambulante: SelectedData) => {
-    setSelectedToDelete(ambulante)
+  const handleDeleteDialog = (permissionario: SelectedData) => {
+    setSelectedToDelete(permissionario)
     setOpenDelete(true)
   }
 
@@ -150,7 +150,7 @@ export function DataTableRowActions<TData>({
 
           <DropdownMenuItem
             className="cursor-pointer"
-            onClick={() => handleEditDialog(ambulante)}
+            onClick={() => handleEditDialog(permissionario)}
           >
             Editar
           </DropdownMenuItem>
@@ -159,7 +159,7 @@ export function DataTableRowActions<TData>({
 
           <DropdownMenuItem
             className="cursor-pointer"
-            onClick={() => handleDeleteDialog(ambulante)}
+            onClick={() => handleDeleteDialog(permissionario)}
           >
             Excluir
           </DropdownMenuItem>
@@ -276,23 +276,23 @@ export function DataTableRowActions<TData>({
           <AlertDialogHeader>
             <div className="px-4 sm:px-0">
               <h3 className="text-base font-semibold leading-4 text-gray-900">
-                {ambulante.nome}
+                {permissionario.nome}
               </h3>
               <p className="mt-1 max-w-2xl text-sm leading-4 text-gray-500">
-                Todos os dados do(a) ambulante.
+                Todos os dados do(a) permissionário(a).
               </p>
               <small
                 className={clsx(
                   'text-center flex items-center justify-center mt-1 gap-1 capitalize',
                   {
-                    'text-emerald-500': ambulante.status === 'ativo',
-                    'text-blue-500': ambulante.status === 'pendente',
-                    'text-red-500': ambulante.status === 'inativo',
+                    'text-emerald-500': permissionario.status === 'ativo',
+                    'text-blue-500': permissionario.status === 'pendente',
+                    'text-red-500': permissionario.status === 'inativo',
                   },
                 )}
               >
                 <Circle weight="fill" size={8} />
-                {ambulante.status}
+                {permissionario.status}
               </small>
             </div>
           </AlertDialogHeader>
@@ -304,7 +304,7 @@ export function DataTableRowActions<TData>({
                   Nome Completo
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {ambulante.nome}
+                  {permissionario.nome}
                 </dd>
               </div>
 
@@ -313,7 +313,7 @@ export function DataTableRowActions<TData>({
                   CPF
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {ambulante.cpf}
+                  {permissionario.cpf}
                 </dd>
               </div>
 
@@ -322,7 +322,7 @@ export function DataTableRowActions<TData>({
                   E-mail
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {ambulante.email}
+                  {permissionario.email}
                 </dd>
               </div>
 
@@ -331,7 +331,7 @@ export function DataTableRowActions<TData>({
                   Telefone
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {ambulante.phone}
+                  {permissionario.phone}
                 </dd>
               </div>
 
@@ -340,21 +340,22 @@ export function DataTableRowActions<TData>({
                   Endereço
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {ambulante.place}
-                  {ambulante.number && `, ${ambulante.number}`}
-                  {ambulante.complement && ` - ${ambulante.complement}`}
-                  {` - ${ambulante.neighborhood}`}
-                  {` - ${ambulante.city}`}
-                  {` - ${ambulante.cep}`}
+                  {permissionario.place}
+                  {permissionario.number && `, ${permissionario.number}`}
+                  {permissionario.complement &&
+                    ` - ${permissionario.complement}`}
+                  {` - ${permissionario.neighborhood}`}
+                  {` - ${permissionario.city}`}
+                  {` - ${permissionario.cep}`}
                 </dd>
               </div>
 
               <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                 <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  Tipo de Atividade
+                  Tipo de Modal
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {ambulante.atividade}
+                  {permissionario.modal}
                 </dd>
               </div>
 
@@ -363,7 +364,7 @@ export function DataTableRowActions<TData>({
                   Anotações
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {ambulante.notes}
+                  {permissionario.notes}
                 </dd>
               </div>
             </dl>

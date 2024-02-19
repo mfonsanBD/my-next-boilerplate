@@ -65,7 +65,7 @@ model VerificationRequest {
 model StreetVendorActivityType {
   id           String         @id @default(cuid())
   name         String
-  StreetVendor StreetVendor[]
+  streetVendor StreetVendor[]
 }
 
 model StreetVendor {
@@ -86,4 +86,30 @@ model StreetVendor {
   status         String                   @default("ativo")
   createdAt      DateTime                 @default(now())
   updatedAt      DateTime                 @updatedAt
+}
+
+model VanLicenseeModalType {
+  id          String        @id @default(cuid())
+  name        String
+  vanLicensee VanLicensee[]
+}
+
+model VanLicensee {
+  id           String               @id @default(cuid())
+  name         String
+  cpf          String               @unique
+  cep          String
+  place        String
+  complement   String?
+  number       String?
+  neighborhood String
+  city         String
+  phone        String
+  email        String               @unique
+  modalTypeId  String
+  modalType    VanLicenseeModalType @relation(fields: [modalTypeId], references: [id])
+  notes        String?
+  status       String               @default("ativo")
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
 }
