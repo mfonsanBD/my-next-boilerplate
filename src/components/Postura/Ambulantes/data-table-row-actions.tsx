@@ -57,6 +57,8 @@ export function DataTableRowActions<TData>({
     null,
   )
 
+  const [openView, setOpenView] = useState(false)
+
   const ambulante = ambulantes.parse(row.original)
 
   const handleEditDialog = (ambulante: SelectedData) => {
@@ -138,6 +140,13 @@ export function DataTableRowActions<TData>({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={() => setOpenView(true)}
+          >
+            Visualizar
+          </DropdownMenuItem>
+
           <DropdownMenuItem
             className="cursor-pointer"
             onClick={() => handleEditDialog(ambulante)}
@@ -251,6 +260,103 @@ export function DataTableRowActions<TData>({
                 'Excluir'
               )}
             </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={openView}
+        onOpenChange={(isOpen) => {
+          if (isOpen === true) return
+          setOpenView(false)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="px-4 sm:px-0">
+              <h3 className="text-base font-semibold leading-4 text-gray-900">
+                {ambulante.nome}
+              </h3>
+              <p className="mt-1 max-w-2xl text-sm leading-4 text-gray-500">
+                Todos os dados do(a) ambulante.
+              </p>
+            </div>
+          </AlertDialogHeader>
+
+          <div className="border-t border-gray-100">
+            <dl className="divide-y divide-gray-100">
+              <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <dt className="text-sm font-medium leading-6 text-gray-900">
+                  Nome Completo
+                </dt>
+                <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  {ambulante.nome}
+                </dd>
+              </div>
+
+              <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <dt className="text-sm font-medium leading-6 text-gray-900">
+                  CPF
+                </dt>
+                <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  {ambulante.cpf}
+                </dd>
+              </div>
+
+              <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <dt className="text-sm font-medium leading-6 text-gray-900">
+                  E-mail
+                </dt>
+                <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  {ambulante.email}
+                </dd>
+              </div>
+
+              <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <dt className="text-sm font-medium leading-6 text-gray-900">
+                  Telefone
+                </dt>
+                <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  {ambulante.phone}
+                </dd>
+              </div>
+
+              <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <dt className="text-sm font-medium leading-6 text-gray-900">
+                  Endereço
+                </dt>
+                <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  {ambulante.place}
+                  {ambulante.number && `, ${ambulante.number}`}
+                  {ambulante.complement && ` - ${ambulante.complement}`}
+                  {` - ${ambulante.neighborhood}`}
+                  {` - ${ambulante.city}`}
+                  {` - ${ambulante.cep}`}
+                </dd>
+              </div>
+
+              <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <dt className="text-sm font-medium leading-6 text-gray-900">
+                  Tipo de Atividade
+                </dt>
+                <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  {ambulante.atividade}
+                </dd>
+              </div>
+
+              <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <dt className="text-sm font-medium leading-6 text-gray-900">
+                  Anotações
+                </dt>
+                <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  {ambulante.notes}
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Fechar</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
