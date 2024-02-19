@@ -283,7 +283,7 @@ export function DataTableRowActions<TData>({
               </p>
               <small
                 className={clsx(
-                  'text-center flex items-center justify-center mt-1 gap-1 capitalize',
+                  'flex items-center justify-center sm:justify-start mt-1 gap-1 capitalize',
                   {
                     'text-emerald-500': permissionario.status === 'ativo',
                     'text-blue-500': permissionario.status === 'pendente',
