@@ -7,7 +7,9 @@ interface TableAreaProps {
 export default function TableArea({ children }: TableAreaProps) {
   return (
     <section>
-      <div className="mx-auto max-w-7xl py-8 sm:px-6 lg:px-8">{children}</div>
+      <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8">
+        {children}
+      </div>
     </section>
   )
 }
