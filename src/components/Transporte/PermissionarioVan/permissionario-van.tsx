@@ -16,12 +16,6 @@ export function PermissionarioVanComp() {
   const permissionarios = PermissionarioVanMapper(data?.permissionariosVan)
 
   return (
-    <div className="bg-white p-4 sm:p-10 rounded-lg">
-      <DataTable
-        data={permissionarios}
-        columns={columns}
-        isLoading={isLoading}
-      />
-    </div>
+    <DataTable data={permissionarios} columns={columns} isLoading={isLoading} />
   )
 }

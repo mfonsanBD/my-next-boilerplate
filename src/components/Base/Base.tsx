@@ -17,7 +17,7 @@ export default async function Base({ children }: BaseProps) {
   }
 
   return (
-    <div className="bg-[#EFF2F4] h-screen flex flex-col justify-between">
+    <div className="h-screen flex flex-col justify-between">
       <div>
         <Header />
         {children}
