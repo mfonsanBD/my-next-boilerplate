@@ -13,6 +13,7 @@ export async function GET() {
     include: {
       modalType: {
         select: {
+          id: true,
           name: true,
         },
       },
@@ -84,6 +85,35 @@ export async function POST(request: NextRequest) {
       {
         message:
           'Não foi possível adicionar o permissionário. Tente novamente mais tarde.',
+      },
+      { status: 400 },
+    )
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  const data = await request.json()
+
+  try {
+    const permissionario = await db.vanLicensee.update({
+      where: {
+        id: data.id,
+      },
+      data,
+    })
+
+    return NextResponse.json(
+      {
+        permissionario,
+        message: 'Permissionário atualizado com sucesso!',
+      },
+      { status: 200 },
+    )
+  } catch (error) {
+    return NextResponse.json(
+      {
+        message:
+          'Não foi possível atualizar o permissionário. Tente novamente mais tarde.',
       },
       { status: 400 },
     )

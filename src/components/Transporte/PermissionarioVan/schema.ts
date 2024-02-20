@@ -7,6 +7,7 @@ export const permissionarios = z.object({
   email: z.string(),
   status: z.string(),
   modal: z.string(),
+  modalId: z.string(),
   cep: z.string().nullable(),
   place: z.string().nullable(),
   complement: z.string().nullable(),

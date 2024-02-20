@@ -26,15 +26,33 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import axios from 'axios'
-import { mutate } from 'swr'
+import useSWR, { mutate } from 'swr'
 import { toast } from 'react-toastify'
 import InputText from '@/components/InputText/InputText'
 import { permissionarios } from './schema'
 import clsx from 'clsx'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import InputWithMask from '@/components/InputWithMask/InputWithMask'
+import SelectDropdown from '@/components/SelectDropdown/SelectDropdown'
+import { Textarea } from '@/components/ui/textarea'
+import { SelectMapper } from '@/utils/mappers'
 
 const schema = z.object({
-  tema: z.string().nonempty('O tema é obrigatório.'),
-  data: z.string().nonempty('A data é obrigatória.'),
+  name: z.string().nonempty('O campo Nome Completo é obrigatório.'),
+  cpf: z.string().nonempty('O campo CPF é obrigatório.'),
+  cep: z.string().nonempty('O campo CEP é obrigatório.'),
+  place: z.string().nonempty('O campo Logradouro é obrigatório.'),
+  complement: z.string().optional(),
+  number: z.string().optional(),
+  neighborhood: z.string().nonempty('O campo Bairro é obrigatório.'),
+  city: z.string().nonempty('O campo Cidade é obrigatório.'),
+  phone: z.string().nonempty('O campo Telefone é obrigatório'),
+  email: z
+    .string()
+    .nonempty('O campo e-mail é obrigatório.')
+    .email('Informe um e-mail válido.'),
+  modalType: z.string().nonempty('O campo Tipo de Modal é obrigatório'),
+  notes: z.string().optional(),
 })
 
 type FormProps = z.infer<typeof schema>
@@ -45,9 +63,14 @@ interface DataTableRowActionsProps<TData> {
 
 type SelectedData = z.infer<typeof permissionarios>
 
+const fetcher = (url: string) => axios.get(url).then((res) => res.data)
+
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
+  const { data } = useSWR('/api/modaltype', fetcher)
+  const types = SelectMapper(data?.modalTypes)
+
   const [openEdit, setOpenEdit] = useState(false)
   const [selectedToEdit, setSelectedToEdit] = useState<SelectedData | null>(
     null,
@@ -75,7 +98,11 @@ export function DataTableRowActions<TData>({
   const {
     handleSubmit,
     control,
-    formState: { errors },
+    getValues,
+    setError,
+    clearErrors,
+    setValue,
+    formState: { errors, isSubmitting },
   } = useForm<FormProps>({
     resolver: zodResolver(schema),
   })
@@ -85,21 +112,24 @@ export function DataTableRowActions<TData>({
     async (data: any) => {
       setLoading(true)
 
-      const inputDate = new Date(data.data)
-      const newDate = new Date(
-        inputDate.getTime() - inputDate.getTimezoneOffset() * 60000,
-      )
+      const newdata = {
+        ...data,
+        name: data.name.toUpperCase(),
+        number: data.number ? data.number.trim() : null,
+        complement: data.complement ? data.complement.trim() : null,
+        notes: data.notes ? data.notes.trim() : null,
+        modalTypeId: data.modalType,
+        id: permissionario.id,
+      }
+      // eslint-disable-next-line no-unused-vars
+      const { modalType: newModalType, ...rest } = newdata
 
       await axios
-        .patch('/api/assemblies', {
-          id: selectedToEdit?.id,
-          theme: data.tema,
-          date: newDate.toISOString(),
-        })
+        .patch('/api/transporte/permissionario-van', rest)
         .then((response) => {
           setOpenEdit(false)
           toast.success(response.data.message)
-          mutate('/api/assemblies')
+          mutate('/api/transporte/permissionario-van')
         })
         .catch((error) => {
           toast.error(error.response.data.message)
@@ -107,7 +137,7 @@ export function DataTableRowActions<TData>({
 
       setLoading(false)
     },
-    [selectedToEdit],
+    [permissionario],
   )
 
   const [loadingDelete, setLoadingDelete] = useState(false)
@@ -115,11 +145,11 @@ export function DataTableRowActions<TData>({
     setLoadingDelete(true)
 
     await axios
-      .delete('/api/postura/ambulantes', { data: { id: data } })
+      .delete('/api/transporte/permissionario-van', { data: { id: data } })
       .then((response) => {
         setOpenDelete(false)
         toast.success(response.data.message)
-        mutate('/api/postura/ambulantes')
+        mutate('/api/transporte/permissionario-van')
       })
       .catch((error) => {
         toast.error(error.response.data.message)
@@ -127,6 +157,35 @@ export function DataTableRowActions<TData>({
 
     setLoadingDelete(false)
   }, [])
+
+  const handleGetAddress = async () => {
+    setLoading(true)
+    const cep = getValues('cep')
+
+    if (!cep) {
+      setError('cep', { message: 'O campo CEP é obrigatório.' })
+      setLoading(false)
+      return
+    } else {
+      clearErrors('cep')
+    }
+
+    if (!cep.includes('_')) {
+      await axios
+        .get(`https://viacep.com.br/ws/${cep}/json/`)
+        .then((response) => {
+          setLoading(false)
+
+          setValue('place', response.data.logradouro)
+          setValue('neighborhood', response.data.bairro)
+          setValue('city', response.data.localidade)
+        })
+    } else {
+      setError('cep', { message: 'O campo CEP precisa ter 9 caracteres.' })
+      setLoading(false)
+      return
+    }
+  }
 
   return (
     <>
@@ -176,48 +235,348 @@ export function DataTableRowActions<TData>({
       >
         <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Alterar Assembléia: {selectedToEdit?.nome}
-            </AlertDialogTitle>
+            <AlertDialogTitle>Alterar Permissionário</AlertDialogTitle>
           </AlertDialogHeader>
 
-          <form className="w-full space-y-4" onSubmit={handleSubmit(onSubmit)}>
-            <div className="w-full">
-              <Controller
-                name="tema"
-                control={control}
-                defaultValue={selectedToEdit?.nome}
-                render={({ field: { onChange, value } }) => (
-                  <InputText
-                    label="Tema"
-                    labelFor="tema"
-                    value={value}
-                    placeholder="Ex.: Assembléia extraordinária"
-                    isRequired
-                    onChange={onChange}
-                    disabled={loading}
-                    isDisabled={loading}
-                  />
-                )}
-              />
+          <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
+            <ScrollArea className="h-[600px] sm:h-[500px] 2xl:h-fit w-full">
+              <div className="space-y-4 pr-3">
+                <div className="grid grid-cols-1 lg:grid-cols-4 items-end gap-4">
+                  <div className="sm:col-span-2">
+                    <Controller
+                      name="name"
+                      control={control}
+                      defaultValue={selectedToEdit?.nome || ''}
+                      render={({ field }) => (
+                        <InputText
+                          label="Nome Completo"
+                          labelFor="name"
+                          placeholder="Ex.: João da Silva"
+                          isRequired
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
 
-              {errors.tema && (
-                <small className="text-red-500">{errors.tema.message}</small>
-              )}
-            </div>
-
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={loading}>Cancelar</AlertDialogCancel>
-              <Button type="submit" disabled={loading}>
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <CircleNotch size={24} className="animate-spin" />
+                    {errors.name && (
+                      <small className="text-red-500">
+                        {errors.name.message}
+                      </small>
+                    )}
                   </div>
-                ) : (
-                  'Alterar'
-                )}
-              </Button>
-            </AlertDialogFooter>
+
+                  <div className="sm:col-span-2">
+                    <Controller
+                      name="cpf"
+                      control={control}
+                      defaultValue={selectedToEdit?.cpf || ''}
+                      render={({ field }) => (
+                        <InputWithMask
+                          format="###.###.###-##"
+                          mask="_"
+                          label="CPF"
+                          labelFor="cpf"
+                          placeholder="Ex.: 000.000.000-00"
+                          isRequired
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+
+                    {errors.cpf && (
+                      <small className="text-red-500">
+                        {errors.cpf.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-3">
+                    <Controller
+                      name="cep"
+                      control={control}
+                      defaultValue={selectedToEdit?.cep || ''}
+                      render={({ field }) => (
+                        <InputWithMask
+                          format="#####-###"
+                          mask="_"
+                          label="CEP"
+                          labelFor="cep"
+                          placeholder="Ex.: 00000-000"
+                          isRequired
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+
+                    {errors.cep && (
+                      <small className="text-red-500">
+                        {errors.cep.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div
+                    className={clsx('sm:col-span-1', { 'mb-6': errors.cep })}
+                  >
+                    <Button
+                      type="button"
+                      className="w-full"
+                      disabled={loading}
+                      onClick={() => handleGetAddress()}
+                    >
+                      {loading ? (
+                        <div className="flex items-center gap-2">
+                          <CircleNotch size={24} className="animate-spin" />
+                        </div>
+                      ) : (
+                        'Buscar CEP'
+                      )}
+                    </Button>
+                  </div>
+
+                  <div className="col-span-full">
+                    <Controller
+                      name="place"
+                      control={control}
+                      defaultValue={selectedToEdit?.place || ''}
+                      render={({ field }) => (
+                        <InputText
+                          label="Logradouro"
+                          labelFor="place"
+                          placeholder="Ex.: Rua das Pedras"
+                          isRequired
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+
+                    {errors.place && (
+                      <small className="text-red-500">
+                        {errors.place.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <Controller
+                      name="number"
+                      control={control}
+                      defaultValue={selectedToEdit?.number || ''}
+                      render={({ field }) => (
+                        <InputWithMask
+                          format="#######"
+                          label="Número"
+                          labelFor="number"
+                          placeholder="Ex.: 0000000"
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+                  </div>
+
+                  <div className="sm:col-span-3">
+                    <Controller
+                      name="complement"
+                      control={control}
+                      defaultValue={selectedToEdit?.complement || ''}
+                      render={({ field }) => (
+                        <InputText
+                          label="Complemento"
+                          labelFor="complement"
+                          placeholder="Ex.: próximo ao Chez Michou"
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <Controller
+                      name="neighborhood"
+                      control={control}
+                      defaultValue={selectedToEdit?.neighborhood || ''}
+                      render={({ field }) => (
+                        <InputText
+                          label="Bairro"
+                          labelFor="neighborhood"
+                          placeholder="Ex.: Centro"
+                          isRequired
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+
+                    {errors.neighborhood && (
+                      <small className="text-red-500">
+                        {errors.neighborhood.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <Controller
+                      name="city"
+                      control={control}
+                      defaultValue={selectedToEdit?.city || ''}
+                      render={({ field }) => (
+                        <InputText
+                          label="Cidade"
+                          labelFor="city"
+                          placeholder="Ex.: Armação dos Búzios"
+                          isRequired
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+
+                    {errors.city && (
+                      <small className="text-red-500">
+                        {errors.city.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <Controller
+                      name="email"
+                      control={control}
+                      defaultValue={selectedToEdit?.email || ''}
+                      render={({ field }) => (
+                        <InputText
+                          label="E-mail"
+                          labelFor="email"
+                          placeholder="Ex.: joaodasilva@gmail.com"
+                          isRequired
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+
+                    {errors.email && (
+                      <small className="text-red-500">
+                        {errors.email.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <Controller
+                      name="phone"
+                      control={control}
+                      defaultValue={selectedToEdit?.phone || ''}
+                      render={({ field }) => (
+                        <InputWithMask
+                          format="(##) #####-####"
+                          mask="_"
+                          label="Telefone"
+                          labelFor="phone"
+                          placeholder="Ex.: (22) 90000-0000"
+                          isRequired
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+
+                    {errors.phone && (
+                      <small className="text-red-500">
+                        {errors.phone.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="col-span-full">
+                    <Controller
+                      name="modalType"
+                      control={control}
+                      defaultValue={selectedToEdit?.modalId || ''}
+                      render={({ field: { onChange, value } }) => (
+                        <SelectDropdown
+                          itemSelected={onChange}
+                          isRequired
+                          name="Tipo de Modal"
+                          label="Tipo de Modal"
+                          labelFor="modalType"
+                          items={types}
+                          isDisabled={isSubmitting}
+                          valueDf={value}
+                        />
+                      )}
+                    />
+
+                    {errors.modalType && (
+                      <small className="text-red-500">
+                        {errors.modalType.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="col-span-full">
+                    <label
+                      htmlFor="notes"
+                      className={clsx(
+                        'block text-sm font-medium leading-6 text-gray-900',
+                        {
+                          'opacity-20': isSubmitting,
+                        },
+                      )}
+                    >
+                      Anotações:
+                    </label>
+
+                    <div className="mt-1">
+                      <Controller
+                        name="notes"
+                        control={control}
+                        defaultValue={selectedToEdit?.notes || ''}
+                        render={({ field }) => (
+                          <Textarea
+                            placeholder="Digite uma anotação..."
+                            className="placeholder:text-zinc-400"
+                            disabled={isSubmitting}
+                            {...field}
+                          />
+                        )}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isSubmitting}>
+                    Cancelar
+                  </AlertDialogCancel>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <div className="flex items-center gap-2">
+                        <CircleNotch size={24} className="animate-spin" />
+                      </div>
+                    ) : (
+                      'Alterar'
+                    )}
+                  </Button>
+                </AlertDialogFooter>
+              </div>
+            </ScrollArea>
           </form>
         </AlertDialogContent>
       </AlertDialog>
@@ -233,11 +592,11 @@ export function DataTableRowActions<TData>({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Você está excluindo um ambulante!
+              Você está excluindo um permissionário!
             </AlertDialogTitle>
 
             <AlertDialogDescription>
-              O ambulante{' '}
+              O permissionário{' '}
               <span className="font-medium text-red-600">
                 {selectedToDelete?.nome}
               </span>{' '}

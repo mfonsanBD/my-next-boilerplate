@@ -6,6 +6,7 @@ export const ambulantes = z.object({
   cpf: z.string(),
   email: z.string(),
   status: z.string(),
+  atividadeId: z.string(),
   atividade: z.string(),
   cep: z.string().nullable(),
   place: z.string().nullable(),

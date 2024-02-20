@@ -83,7 +83,7 @@ export default function SelectDropdown({
             )}
           >
             {valueDf
-              ? items.find((item) => item.label === valueDf)?.label
+              ? items.find((item) => item.value === valueDf)?.label
               : value
                 ? items.find((item) => item.value === value)?.label
                 : `Selecione um(a) ${name}`}
