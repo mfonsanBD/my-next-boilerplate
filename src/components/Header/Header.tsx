@@ -20,12 +20,18 @@ const navigation = [
     href: '/transporte/permissionario-van',
     area: 'transporte',
   },
-  // { name: 'Meio Ambiente', href: '/meio-ambiente' },
-  // { name: 'Urbanismo', href: '/urbanismo' },
-  // {
-  //   name: 'Vigilância Sanitária',
-  //   href: '/vigilancia-sanitaria',
-  // },
+  { name: 'Meio Ambiente', href: '/meio-ambiente', area: 'meio-ambiente' },
+  { name: 'Urbanismo', href: '/urbanismo', area: 'urbanismo' },
+  {
+    name: 'Vigilância Sanitária',
+    href: '/vigilancia-sanitaria',
+    area: 'vigilancia-sanitaria',
+  },
+  {
+    name: 'Fazendária',
+    href: '/fazendaria',
+    area: 'fazendaria',
+  },
 ]
 
 function classNames(...classes: any) {
@@ -59,7 +65,7 @@ export default function Header() {
                 </div>
 
                 <div className="hidden sm:ml-10 sm:flex items-center">
-                  <div className="flex space-x-2">
+                  <div className="flex sm:space-x-1">
                     {navigation.map((item) => (
                       <Link
                         key={item.name}

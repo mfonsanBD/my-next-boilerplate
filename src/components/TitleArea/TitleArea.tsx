@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 
 interface TitleAreaProps {
-  children: ReactNode
+  children?: ReactNode
   title: string
 }
 
