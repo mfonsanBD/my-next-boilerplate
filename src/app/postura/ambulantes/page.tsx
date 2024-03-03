@@ -1,4 +1,4 @@
-import Base from '@/components/Base/Base'
+import PosturaBase from '@/components/Base/PosturaBase'
 import { AddButton } from '@/components/Postura/Ambulantes/AddButton'
 import { AmbulantesComp } from '@/components/Postura/Ambulantes/ambulantes'
 import TableArea from '@/components/TableArea/TableArea'
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 }
 
 const Ambulantes = () => (
-  <Base>
+  <PosturaBase>
     <TitleArea title="Ambulantes">
       <AddButton />
     </TitleArea>
@@ -18,7 +18,7 @@ const Ambulantes = () => (
     <TableArea>
       <AmbulantesComp />
     </TableArea>
-  </Base>
+  </PosturaBase>
 )
 
 export default Ambulantes

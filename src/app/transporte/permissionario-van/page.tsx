@@ -1,4 +1,4 @@
-import Base from '@/components/Base/Base'
+import TransportBase from '@/components/Base/TransportBase'
 import TableArea from '@/components/TableArea/TableArea'
 import TitleArea from '@/components/TitleArea/TitleArea'
 import { AddButton } from '@/components/Transporte/PermissionarioVan/AddButton'
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 }
 
 const PermissionarioVan = () => (
-  <Base>
+  <TransportBase>
     <TitleArea title="Permissionário Van">
       <AddButton />
     </TitleArea>
@@ -18,7 +18,7 @@ const PermissionarioVan = () => (
     <TableArea>
       <PermissionarioVanComp />
     </TableArea>
-  </Base>
+  </TransportBase>
 )
 
 export default PermissionarioVan
