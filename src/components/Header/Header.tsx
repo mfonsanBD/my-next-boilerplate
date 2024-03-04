@@ -20,7 +20,11 @@ const navigation = [
     href: '/transporte/permissionario-van',
     area: 'transporte',
   },
-  { name: 'Meio Ambiente', href: '/meio-ambiente', area: 'meio-ambiente' },
+  {
+    name: 'Meio Ambiente',
+    href: '/meio-ambiente/obras-embargadas',
+    area: 'meio-ambiente',
+  },
   { name: 'Urbanismo', href: '/urbanismo', area: 'urbanismo' },
   {
     name: 'Vigilância Sanitária',

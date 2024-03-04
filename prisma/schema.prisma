@@ -113,3 +113,39 @@ model VanLicensee {
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
 }
+
+enum ConstructionManagerType {
+  MEIOAMBIENTE
+  URBANISMO
+}
+
+model ConstructionManager {
+  id             String                  @id @default(cuid())
+  name           String
+  document       String                  @unique
+  place          String
+  number         String
+  complement     String
+  neighborhood   String
+  city           String
+  cep            String
+  phone          String
+  email          String
+  type           ConstructionManagerType
+  createdAt      DateTime                @default(now())
+  EmbargoedWorks EmbargoedWorks[]
+}
+
+model EmbargoedWorks {
+  id                    String              @id @default(cuid())
+  constructionManagerId String
+  embargoNumber         String
+  embargoFile           String
+  place                 String
+  number                String
+  complement            String
+  neighborhood          String
+  city                  String
+  cep                   String
+  constructionManager   ConstructionManager @relation(fields: [constructionManagerId], references: [id])
+}
