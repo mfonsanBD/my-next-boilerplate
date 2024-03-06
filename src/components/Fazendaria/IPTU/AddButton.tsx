@@ -152,7 +152,7 @@ export function AddButton() {
             <ScrollArea className="h-[600px] sm:h-[500px] 2xl:h-fit w-full">
               <div className="space-y-4 pr-3">
                 <div className="grid grid-cols-1 lg:grid-cols-4 items-end gap-4">
-                  <div className="col-span-full">
+                  <div className="sm:col-span-full">
                     <Controller
                       name="corporateReason"
                       control={control}
@@ -177,7 +177,7 @@ export function AddButton() {
                     )}
                   </div>
 
-                  <div className="col-span-2">
+                  <div className="sm:col-span-2">
                     <Controller
                       name="businessName"
                       control={control}
@@ -202,7 +202,7 @@ export function AddButton() {
                     )}
                   </div>
 
-                  <div className="col-span-2">
+                  <div className="sm:col-span-2">
                     <Controller
                       name="cnpj"
                       control={control}
@@ -229,7 +229,7 @@ export function AddButton() {
                     )}
                   </div>
 
-                  <div className="col-span-2">
+                  <div className="sm:col-span-2">
                     <Controller
                       name="email"
                       control={control}
@@ -255,7 +255,7 @@ export function AddButton() {
                     )}
                   </div>
 
-                  <div className="col-span-2">
+                  <div className="sm:col-span-2">
                     <Controller
                       name="phone"
                       control={control}
@@ -336,7 +336,7 @@ export function AddButton() {
                     </Button>
                   </div>
 
-                  <div className="col-span-full">
+                  <div className="sm:col-span-full">
                     <Controller
                       name="place"
                       control={control}
