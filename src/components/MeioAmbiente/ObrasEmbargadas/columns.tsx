@@ -4,53 +4,87 @@ import { ColumnDef } from '@tanstack/react-table'
 
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
-import { Permissionarios } from './schema'
+import { EmbargoedWorks } from './schema'
+import Link from 'next/link'
+import { DownloadSimple } from '@phosphor-icons/react'
 
-export const columns: ColumnDef<Permissionarios>[] = [
+export const columns: ColumnDef<EmbargoedWorks>[] = [
   {
-    accessorKey: 'nome',
+    accessorKey: 'numero',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Nome" />
+      <DataTableColumnHeader
+        column={column}
+        title="Número do Auto de Embargo
+      "
+      />
     ),
     cell: ({ row }) => {
       return (
         <div className="flex space-x-2">
           <span className="max-w-[500px] truncate font-medium">
-            {row.getValue('nome')}
+            {row.getValue('numero')}
           </span>
         </div>
       )
     },
   },
   {
-    accessorKey: 'cpf',
+    accessorKey: 'responsavel',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="CPF" />
+      <DataTableColumnHeader column={column} title="Responsável da Obra" />
     ),
     cell: ({ row }) => {
       return (
         <div className="flex space-x-2">
           <span className="max-w-[500px] truncate font-medium">
-            {row.getValue('cpf')}
+            {row.getValue('responsavel')}
           </span>
         </div>
       )
     },
+    enableSorting: false,
   },
   {
-    accessorKey: 'email',
+    accessorKey: 'telefone',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="E-mail" />
+      <DataTableColumnHeader
+        column={column}
+        title="Telefone do Responsável da Obra"
+      />
     ),
     cell: ({ row }) => {
       return (
         <div className="flex space-x-2">
           <span className="max-w-[500px] truncate font-medium">
-            {row.getValue('email')}
+            {row.getValue('telefone')}
           </span>
         </div>
       )
     },
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'file',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Cópia do Auto de Embargo" />
+    ),
+    cell: ({ row }) => {
+      return (
+        <div className="flex space-x-2">
+          <span className="max-w-[500px] truncate font-medium">
+            <Link
+              href={row.getValue('file')}
+              download="download"
+              target="_blank"
+              className="w-10 h-10 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-center rounded"
+            >
+              <DownloadSimple size={24} className="text-blue-600" />
+            </Link>
+          </span>
+        </div>
+      )
+    },
+    enableSorting: false,
   },
   {
     id: 'acoes',

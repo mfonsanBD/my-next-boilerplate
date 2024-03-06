@@ -68,3 +68,22 @@ export const ManegersMapper = (manegers: any[]) => {
       }))
     : []
 }
+
+export const EmbargoedWorksMapper = (embargos: any[]) => {
+  return embargos
+    ? embargos.map((embargo) => ({
+        id: embargo.id,
+        numero: embargo.embargoNumber,
+        file: embargo.embargoFile,
+        responsavel: embargo.constructionManager.name,
+        responsavelId: embargo.constructionManager.id,
+        telefone: embargo.constructionManager.phone,
+        place: embargo.place,
+        number: embargo.number || '',
+        complement: embargo.complement || '',
+        neighborhood: embargo.neighborhood,
+        city: embargo.city,
+        cep: embargo.cep,
+      }))
+    : []
+}

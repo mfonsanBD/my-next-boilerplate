@@ -86,7 +86,7 @@ export default function SelectDropdown({
               ? items.find((item) => item.value === valueDf)?.label
               : value
                 ? items.find((item) => item.value === value)?.label
-                : `Selecione um(a) ${name}`}
+                : 'Selecione uma opção...'}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>

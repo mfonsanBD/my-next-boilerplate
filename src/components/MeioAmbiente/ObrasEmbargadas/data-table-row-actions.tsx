@@ -11,7 +11,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-import { Circle, CircleNotch, DotsThreeVertical } from '@phosphor-icons/react'
+import {
+  CircleNotch,
+  DotsThreeVertical,
+  DownloadSimple,
+} from '@phosphor-icons/react'
 import { useCallback, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
@@ -29,13 +33,14 @@ import axios from 'axios'
 import useSWR, { mutate } from 'swr'
 import { toast } from 'react-toastify'
 import InputText from '@/components/InputText/InputText'
-import { permissionarios } from './schema'
+import { embargoedWorks } from './schema'
 import clsx from 'clsx'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import InputWithMask from '@/components/InputWithMask/InputWithMask'
 import SelectDropdown from '@/components/SelectDropdown/SelectDropdown'
 import { Textarea } from '@/components/ui/textarea'
 import { SelectMapper } from '@/utils/mappers'
+import Link from 'next/link'
 
 const schema = z.object({
   name: z.string().nonempty('O campo Nome Completo é obrigatório.'),
@@ -61,7 +66,7 @@ interface DataTableRowActionsProps<TData> {
   row: Row<TData>
 }
 
-type SelectedData = z.infer<typeof permissionarios>
+type SelectedData = z.infer<typeof embargoedWorks>
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data)
 
@@ -83,15 +88,15 @@ export function DataTableRowActions<TData>({
 
   const [openView, setOpenView] = useState(false)
 
-  const permissionario = permissionarios.parse(row.original)
+  const embargo = embargoedWorks.parse(row.original)
 
-  const handleEditDialog = (permissionario: SelectedData) => {
-    setSelectedToEdit(permissionario)
+  const handleEditDialog = (embargo: SelectedData) => {
+    setSelectedToEdit(embargo)
     setOpenEdit(true)
   }
 
-  const handleDeleteDialog = (permissionario: SelectedData) => {
-    setSelectedToDelete(permissionario)
+  const handleDeleteDialog = (embargo: SelectedData) => {
+    setSelectedToDelete(embargo)
     setOpenDelete(true)
   }
 
@@ -119,17 +124,17 @@ export function DataTableRowActions<TData>({
         complement: data.complement ? data.complement.trim() : null,
         notes: data.notes ? data.notes.trim() : null,
         modalTypeId: data.modalType,
-        id: permissionario.id,
+        id: embargo.id,
       }
       // eslint-disable-next-line no-unused-vars
       const { modalType: newModalType, ...rest } = newdata
 
       await axios
-        .patch('/api/transporte/permissionario-van', rest)
+        .patch('/api/maio-ambiente/obras-embargadas', rest)
         .then((response) => {
           setOpenEdit(false)
           toast.success(response.data.message)
-          mutate('/api/transporte/permissionario-van')
+          mutate('/api/maio-ambiente/obras-embargadas')
         })
         .catch((error) => {
           toast.error(error.response.data.message)
@@ -137,7 +142,7 @@ export function DataTableRowActions<TData>({
 
       setLoading(false)
     },
-    [permissionario],
+    [embargo],
   )
 
   const [loadingDelete, setLoadingDelete] = useState(false)
@@ -145,11 +150,11 @@ export function DataTableRowActions<TData>({
     setLoadingDelete(true)
 
     await axios
-      .delete('/api/transporte/permissionario-van', { data: { id: data } })
+      .delete('/api/meio-ambiente/obras-embargadas', { data: { id: data } })
       .then((response) => {
         setOpenDelete(false)
         toast.success(response.data.message)
-        mutate('/api/transporte/permissionario-van')
+        mutate('/api/meio-ambiente/obras-embargadas')
       })
       .catch((error) => {
         toast.error(error.response.data.message)
@@ -209,7 +214,7 @@ export function DataTableRowActions<TData>({
 
           <DropdownMenuItem
             className="cursor-pointer"
-            onClick={() => handleEditDialog(permissionario)}
+            onClick={() => handleEditDialog(embargo)}
           >
             Editar
           </DropdownMenuItem>
@@ -218,7 +223,7 @@ export function DataTableRowActions<TData>({
 
           <DropdownMenuItem
             className="cursor-pointer"
-            onClick={() => handleDeleteDialog(permissionario)}
+            onClick={() => handleDeleteDialog(embargo)}
           >
             Excluir
           </DropdownMenuItem>
@@ -246,7 +251,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="name"
                       control={control}
-                      defaultValue={selectedToEdit?.nome || ''}
+                      defaultValue={selectedToEdit?.cep || ''}
                       render={({ field }) => (
                         <InputText
                           label="Nome Completo"
@@ -271,7 +276,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="cpf"
                       control={control}
-                      defaultValue={selectedToEdit?.cpf || ''}
+                      defaultValue={selectedToEdit?.cep || ''}
                       render={({ field }) => (
                         <InputWithMask
                           format="###.###.###-##"
@@ -456,7 +461,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="email"
                       control={control}
-                      defaultValue={selectedToEdit?.email || ''}
+                      defaultValue={selectedToEdit?.cep || ''}
                       render={({ field }) => (
                         <InputText
                           label="E-mail"
@@ -481,7 +486,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="phone"
                       control={control}
-                      defaultValue={selectedToEdit?.phone || ''}
+                      defaultValue={selectedToEdit?.cep || ''}
                       render={({ field }) => (
                         <InputWithMask
                           format="(##) #####-####"
@@ -508,7 +513,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="modalType"
                       control={control}
-                      defaultValue={selectedToEdit?.modalId || ''}
+                      defaultValue={selectedToEdit?.cep || ''}
                       render={({ field: { onChange, value } }) => (
                         <SelectDropdown
                           itemSelected={onChange}
@@ -547,7 +552,7 @@ export function DataTableRowActions<TData>({
                       <Controller
                         name="notes"
                         control={control}
-                        defaultValue={selectedToEdit?.notes || ''}
+                        defaultValue={selectedToEdit?.cep || ''}
                         render={({ field }) => (
                           <Textarea
                             placeholder="Digite uma anotação..."
@@ -592,15 +597,15 @@ export function DataTableRowActions<TData>({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Você está excluindo um permissionário!
+              Você está excluindo uma obra embargada!
             </AlertDialogTitle>
 
             <AlertDialogDescription>
-              O permissionário{' '}
+              A obra{' '}
               <span className="font-medium text-red-600">
-                {selectedToDelete?.nome}
+                {selectedToDelete?.numero}
               </span>{' '}
-              está sendo excluído, você tem certeza que deseja excluí-lo?
+              está sendo excluída. Você tem certeza que deseja fazer isso?
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -635,24 +640,11 @@ export function DataTableRowActions<TData>({
           <AlertDialogHeader>
             <div className="px-4 sm:px-0">
               <h3 className="text-base font-semibold leading-4 text-gray-900">
-                {permissionario.nome}
+                Obra Embargada: {embargo.numero}
               </h3>
               <p className="mt-1 max-w-2xl text-sm leading-4 text-gray-500">
-                Todos os dados do(a) permissionário(a).
+                Todos os dados da obra.
               </p>
-              <small
-                className={clsx(
-                  'flex items-center justify-center sm:justify-start mt-1 gap-1 capitalize',
-                  {
-                    'text-emerald-500': permissionario.status === 'ativo',
-                    'text-blue-500': permissionario.status === 'pendente',
-                    'text-red-500': permissionario.status === 'inativo',
-                  },
-                )}
-              >
-                <Circle weight="fill" size={8} />
-                {permissionario.status}
-              </small>
             </div>
           </AlertDialogHeader>
 
@@ -660,70 +652,58 @@ export function DataTableRowActions<TData>({
             <dl className="divide-y divide-gray-100">
               <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                 <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  Nome Completo
+                  Número do Auto de Embargo
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {permissionario.nome}
+                  {embargo.numero}
                 </dd>
               </div>
 
               <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                 <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  CPF
+                  Responsável
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {permissionario.cpf}
+                  {embargo.responsavel}
                 </dd>
               </div>
 
               <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                 <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  E-mail
+                  Telefone do Responsável
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {permissionario.email}
+                  {embargo.telefone}
                 </dd>
               </div>
 
               <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                 <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  Telefone
+                  Endereço da Obra
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {permissionario.phone}
+                  {embargo.place}
+                  {embargo.number && `, ${embargo.number}`}
+                  {embargo.complement && ` - ${embargo.complement}`}
+                  {` - ${embargo.neighborhood}`}
+                  {` - ${embargo.city}`}
+                  {` - ${embargo.cep}`}
                 </dd>
               </div>
 
-              <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  Endereço
+              <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <dt className="text-sm font-medium leading-6 text-gray-900">
+                  Cópia do Auto de Embargo
                 </dt>
-                <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {permissionario.place}
-                  {permissionario.number && `, ${permissionario.number}`}
-                  {permissionario.complement &&
-                    ` - ${permissionario.complement}`}
-                  {` - ${permissionario.neighborhood}`}
-                  {` - ${permissionario.city}`}
-                  {` - ${permissionario.cep}`}
-                </dd>
-              </div>
-
-              <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  Tipo de Modal
-                </dt>
-                <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {permissionario.modal}
-                </dd>
-              </div>
-
-              <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  Anotações
-                </dt>
-                <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {permissionario.notes}
+                <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                  <Link
+                    href={embargo.file}
+                    download="download"
+                    target="_blank"
+                    className="w-10 h-10 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-center rounded"
+                  >
+                    <DownloadSimple size={24} className="text-blue-600" />
+                  </Link>
                 </dd>
               </div>
             </dl>

@@ -4,18 +4,18 @@ import { DataTable } from './data-table'
 import { columns } from './columns'
 import useSWR from 'swr'
 import axios from 'axios'
-import { PermissionarioVanMapper } from '@/utils/mappers'
+import { EmbargoedWorksMapper } from '@/utils/mappers'
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data)
 
 export function ObrasEmbargadasComp() {
   const { data, isLoading } = useSWR(
-    '/api/transporte/permissionario-van',
+    '/api/meio-ambiente/obras-embargadas',
     fetcher,
   )
-  const permissionarios = PermissionarioVanMapper(data?.permissionariosVan)
+  const embargoedsWorks = EmbargoedWorksMapper(data?.embargoedWorks)
 
   return (
-    <DataTable data={permissionarios} columns={columns} isLoading={isLoading} />
+    <DataTable data={embargoedsWorks} columns={columns} isLoading={isLoading} />
   )
 }
