@@ -127,3 +127,22 @@ export const ISSMapper = (items: any[]) => {
       }))
     : []
 }
+
+export const IPTUMapper = (items: any[]) => {
+  return items
+    ? items.map((item) => ({
+        id: item.id,
+        razaoSocial: item.corporateReason,
+        nomeEmpresarial: item.businessName,
+        cnpj: item.cnpj,
+        email: item.email,
+        telefone: item.phone,
+        place: item.place,
+        number: item.number || '',
+        complement: item.complement || '',
+        neighborhood: item.neighborhood,
+        city: item.city,
+        cep: item.cep,
+      }))
+    : []
+}
