@@ -166,3 +166,33 @@ model WorksInProgress {
   cep                    String
   constructionManager    ConstructionManager @relation(fields: [constructionManagerId], references: [id])
 }
+
+model ISS {
+  id              String  @id @default(cuid())
+  corporateReason String
+  businessName    String
+  cnpj            String
+  phone           String
+  email           String
+  place           String
+  number          String?
+  complement      String?
+  neighborhood    String
+  city            String
+  cep             String
+}
+
+model IPTU {
+  id              String  @id @default(cuid())
+  corporateReason String
+  businessName    String
+  cnpj            String
+  phone           String
+  email           String
+  place           String
+  number          String?
+  complement      String?
+  neighborhood    String
+  city            String
+  cep             String
+}

@@ -37,7 +37,7 @@ const navigation = [
   },
   {
     name: 'Fazendária',
-    href: '/fazendaria',
+    href: '/fazendaria/iss',
     area: 'fazendaria',
   },
 ]

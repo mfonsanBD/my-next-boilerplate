@@ -2,19 +2,19 @@ import React from 'react'
 import Header from '../Header/Header'
 import Footer from '../Footer/Footer'
 import ToastyArea from '../ToastyArea/ToastyArea'
-import { MeioAmbienteNav } from '../MeioAmbiente/MeioAmbienteNav'
+import { FazendariaNav } from '../Fazendaria/FazendariaNav'
 import Base from './Base'
 
 interface BaseProps {
   children: React.ReactNode
 }
 
-export default async function MeioAmbienteBase({ children }: BaseProps) {
+export default async function FazendariaBase({ children }: BaseProps) {
   return (
     <Base>
       <div>
         <Header />
-        <MeioAmbienteNav />
+        <FazendariaNav />
         {children}
       </div>
       <Footer />
