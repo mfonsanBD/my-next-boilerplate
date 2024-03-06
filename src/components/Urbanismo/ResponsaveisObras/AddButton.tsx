@@ -125,12 +125,12 @@ export function AddButton() {
       }
 
       await axios
-        .post('/api/meio-ambiente/responsavel', allData)
+        .post('/api/urbanismo/responsavel', allData)
         .then((response) => {
           setOpen(false)
           reset()
           toast.success(response.data.message)
-          mutate('/api/meio-ambiente/responsavel')
+          mutate('/api/urbanismo/responsavel')
         })
         .catch((error) => {
           error.response.data.errors.map(({ message }: { message: string }) => {

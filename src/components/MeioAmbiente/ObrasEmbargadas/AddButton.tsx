@@ -65,10 +65,7 @@ export type EmbargoedWorksFormProps = z.infer<typeof schema>
 const fetcher = (url: string) => axios.get(url).then((res) => res.data)
 
 export function AddButton() {
-  const { data } = useSWR(
-    '/api/meio-ambiente/responsavel-meio-ambiente',
-    fetcher,
-  )
+  const { data } = useSWR('/api/meio-ambiente/responsavel', fetcher)
   const managers = SelectMapper(data?.meioAmbienteManagers)
 
   const {

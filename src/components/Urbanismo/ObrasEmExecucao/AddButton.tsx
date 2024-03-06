@@ -3,6 +3,7 @@
 
 import InputText from '@/components/InputText/InputText'
 import InputWithMask from '@/components/InputWithMask/InputWithMask'
+import SelectDropdown from '@/components/SelectDropdown/SelectDropdown'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { SelectMapper } from '@/utils/mappers'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CircleNotch } from '@phosphor-icons/react'
 import axios from 'axios'
@@ -21,29 +23,68 @@ import { useCallback, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import * as z from 'zod'
-import { mutate } from 'swr'
-import InputFormatCPFCNPJ from '@/components/InputFormatCpfcnpj/InputFormatCpfcnpj'
-import InputFormatPhone from '@/components/InputFormatPhone/InputFormatPhone'
+import useSWR, { mutate } from 'swr'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { ChangeFileToBase64 } from '@/utils/helpers'
+
+const MAX_FILE_SIZE = 2097152
+const ACCEPTED_IMAGE_TYPES = ['application/pdf']
 
 const schema = z.object({
-  name: z.string().nonempty('O campo Nome Completo é obrigatório.'),
-  document: z.string().nonempty('O campo CPF/CNPJ é obrigatório.'),
+  constructionManagerId: z
+    .string()
+    .nonempty('O campo Responsável da Obra é obrigatório.'),
+  infractionNoticeNumber: z
+    .string()
+    .nonempty('O campo Número do Auto de Infração é obrigatório.'),
+  intimationNumber: z
+    .string()
+    .nonempty('O campo Número da Intimação é obrigatório.'),
   cep: z.string().nonempty('O campo CEP é obrigatório.'),
   place: z.string().nonempty('O campo Logradouro é obrigatório.'),
   complement: z.string().optional(),
   number: z.string().optional(),
   neighborhood: z.string().nonempty('O campo Bairro é obrigatório.'),
   city: z.string().nonempty('O campo Cidade é obrigatório.'),
-  phone: z.string().nonempty('O campo Telefone é obrigatório'),
-  email: z
-    .string()
-    .nonempty('O campo e-mail é obrigatório.')
-    .email('Informe um e-mail válido.'),
+  infractionNoticeFile: z
+    .any()
+    .refine(
+      (files) => files?.length === 1,
+      'A Cópia do Auto de Infração é obrigatório.',
+    )
+    .refine(
+      (files) => files?.[0]?.size < MAX_FILE_SIZE,
+      `A Cópia do Auto de Infração deve conter no máximo 2MB.`,
+    )
+    .refine(
+      (files) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
+      'A Cópia do Auto de Infração precisa ser um aquivo .pdf',
+    ),
+  intimationFile: z
+    .any()
+    .refine(
+      (files) => files?.length === 1,
+      'A Cópia da Intimação é obrigatório.',
+    )
+    .refine(
+      (files) => files?.[0]?.size < MAX_FILE_SIZE,
+      `A Cópia da Intimação deve conter no máximo 2MB.`,
+    )
+    .refine(
+      (files) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
+      'A Cópia da Intimação precisa ser um aquivo .pdf',
+    ),
 })
 
-export type MeioAmbienteResponsavelFormProps = z.infer<typeof schema>
+export type EmbargoedWorksFormProps = z.infer<typeof schema>
+
+const fetcher = (url: string) => axios.get(url).then((res) => res.data)
 
 export function AddButton() {
+  const { data } = useSWR('/api/urbanismo/responsavel', fetcher)
+  const managers = SelectMapper(data?.urbanismoManagers)
+
   const {
     getValues,
     setValue,
@@ -51,15 +92,78 @@ export function AddButton() {
     control,
     setError,
     clearErrors,
+    register,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<MeioAmbienteResponsavelFormProps>({
+  } = useForm<EmbargoedWorksFormProps>({
     resolver: zodResolver(schema),
   })
 
   const [loading, setLoading] = useState(false)
 
   const [open, setOpen] = useState(false)
+
+  const onSubmit = useCallback(
+    async (data: EmbargoedWorksFormProps) => {
+      let newData: any = data
+
+      if (data.number === '') {
+        const { number: noNumber, ...rest } = newData
+        newData = rest
+      } else {
+        newData = {
+          ...newData,
+          number: newData.number.trim(),
+        }
+      }
+
+      if (data.complement === '') {
+        const { complement: noComplement, ...rest } = newData
+        newData = rest
+      }
+
+      let allData: any = newData
+
+      await axios
+        .post('/api/upload-file', {
+          file: await ChangeFileToBase64(data.infractionNoticeFile[0]),
+        })
+        .then(
+          (result) =>
+            (allData = {
+              ...allData,
+              infractionNoticeFile: result?.data as string,
+            }),
+        )
+
+      await axios
+        .post('/api/upload-file', {
+          file: await ChangeFileToBase64(data.intimationFile[0]),
+        })
+        .then(
+          (result) =>
+            (allData = {
+              ...allData,
+              intimationFile: result?.data as string,
+            }),
+        )
+
+      await axios
+        .post('/api/urbanismo/obras-em-execucao', allData)
+        .then((response) => {
+          setOpen(false)
+          reset()
+          toast.success(response.data.message)
+          mutate('/api/urbanismo/obras-em-execucao')
+        })
+        .catch((error) => {
+          error.response.data.errors.map(({ message }: { message: string }) => {
+            toast.error(message)
+          })
+        })
+    },
+    [reset],
+  )
 
   const handleGetAddress = async () => {
     setLoading(true)
@@ -90,60 +194,9 @@ export function AddButton() {
     }
   }
 
-  const [docType, setDocType] = useState('cpf')
-  const handleDocType = (value: string) => {
-    setDocType(value)
-  }
-
-  const [phoneType, setPhoneType] = useState('celular')
-  const handlePhoneType = (value: string) => {
-    setPhoneType(value)
-  }
-
-  const onSubmit = useCallback(
-    async (data: MeioAmbienteResponsavelFormProps) => {
-      let newData: any = data
-
-      if (data.number === '') {
-        const { number: noNumber, ...rest } = newData
-        newData = rest
-      } else {
-        newData = {
-          ...newData,
-          number: newData.number.trim(),
-        }
-      }
-
-      if (data.complement === '') {
-        const { complement: noComplement, ...rest } = newData
-        newData = rest
-      }
-
-      const allData = {
-        ...newData,
-        name: newData?.name.toUpperCase(),
-      }
-
-      await axios
-        .post('/api/meio-ambiente/responsavel', allData)
-        .then((response) => {
-          setOpen(false)
-          reset()
-          toast.success(response.data.message)
-          mutate('/api/meio-ambiente/responsavel')
-        })
-        .catch((error) => {
-          error.response.data.errors.map(({ message }: { message: string }) => {
-            toast.error(message)
-          })
-        })
-    },
-    [reset],
-  )
-
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Adicionar Responsável</Button>
+      <Button onClick={() => setOpen(true)}>Adicionar Obra</Button>
 
       <AlertDialog
         open={open}
@@ -155,59 +208,49 @@ export function AddButton() {
       >
         <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Adicionar Responsável</AlertDialogTitle>
+            <AlertDialogTitle>Adicionar Obra Em Execução</AlertDialogTitle>
           </AlertDialogHeader>
 
           <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
             <ScrollArea className="h-[600px] sm:h-[500px] 2xl:h-fit w-full">
               <div className="space-y-4 pr-3">
-                <div className="grid grid-cols-1 lg:grid-cols-4 items-end gap-4">
-                  <div className="sm:col-span-2">
+                <div className="grid grid-cols-1 lg:grid-cols-4 items-start gap-4">
+                  <div className="col-span-full">
                     <Controller
-                      name="name"
+                      name="constructionManagerId"
                       control={control}
                       defaultValue=""
-                      render={({ field }) => (
-                        <InputText
-                          label="Nome Completo"
-                          labelFor="name"
-                          placeholder="Ex.: João da Silva"
+                      render={({ field: { onChange } }) => (
+                        <SelectDropdown
+                          itemSelected={onChange}
                           isRequired
-                          disabled={isSubmitting}
+                          name="responsável da obra"
+                          label="Responsável da Obra"
+                          labelFor="constructionManagerId"
+                          items={managers}
                           isDisabled={isSubmitting}
-                          {...field}
                         />
                       )}
                     />
 
-                    {errors.name && (
+                    {errors.constructionManagerId && (
                       <small className="text-red-500">
-                        {errors.name.message}
+                        {errors.constructionManagerId.message}
                       </small>
                     )}
                   </div>
 
                   <div className="sm:col-span-2">
                     <Controller
-                      name="document"
+                      name="infractionNoticeNumber"
                       control={control}
                       defaultValue=""
                       render={({ field }) => (
-                        <InputFormatCPFCNPJ
-                          format={
-                            docType === 'cnpj'
-                              ? '##.###.###/####-##'
-                              : '###.###.###-##'
-                          }
-                          mask="_"
-                          labelFor="document"
-                          placeholder={
-                            docType === 'cnpj'
-                              ? 'Ex.: 00.000.000/0000-00'
-                              : 'Ex.: 000.000.000-00'
-                          }
+                        <InputText
+                          label="Número do Auto de Infração"
+                          labelFor="infractionNoticeNumber"
+                          placeholder="Ex.: 00000000000"
                           isRequired
-                          docType={(v: string) => handleDocType(v)}
                           disabled={isSubmitting}
                           isDisabled={isSubmitting}
                           {...field}
@@ -215,9 +258,88 @@ export function AddButton() {
                       )}
                     />
 
-                    {errors.document && (
+                    {errors.infractionNoticeNumber && (
                       <small className="text-red-500">
-                        {errors.document.message}
+                        {errors.infractionNoticeNumber.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <Label
+                      htmlFor="infractionNoticeFile"
+                      className={clsx({
+                        'opacity-20': isSubmitting,
+                      })}
+                    >
+                      Cópia do Auto de Infração:{' '}
+                      <span className="text-red-500">*</span>
+                    </Label>
+
+                    <Input
+                      id="infractionNoticeFile"
+                      type="file"
+                      disabled={isSubmitting}
+                      {...register('infractionNoticeFile')}
+                      className="mt-1 focus:outline-none focus-visible:ring-0 py-3 h-fit cursor-pointer border-zinc-300"
+                      accept="application/pdf"
+                    />
+
+                    {errors.infractionNoticeFile && (
+                      <small className="text-red-500">
+                        {errors.infractionNoticeFile.message?.toString()}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <Controller
+                      name="intimationNumber"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <InputText
+                          label="Número da Intimação"
+                          labelFor="intimationNumber"
+                          placeholder="Ex.: 00000000000"
+                          isRequired
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+
+                    {errors.intimationNumber && (
+                      <small className="text-red-500">
+                        {errors.intimationNumber.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <Label
+                      htmlFor="intimationFile"
+                      className={clsx({
+                        'opacity-20': isSubmitting,
+                      })}
+                    >
+                      Cópia da Intimação:{' '}
+                      <span className="text-red-500">*</span>
+                    </Label>
+
+                    <Input
+                      id="intimationFile"
+                      type="file"
+                      disabled={isSubmitting}
+                      {...register('intimationFile')}
+                      className="mt-1 focus:outline-none focus-visible:ring-0 py-3 h-fit cursor-pointer border-zinc-300"
+                      accept="application/pdf"
+                    />
+
+                    {errors.intimationFile && (
+                      <small className="text-red-500">
+                        {errors.intimationFile.message?.toString()}
                       </small>
                     )}
                   </div>
@@ -249,12 +371,10 @@ export function AddButton() {
                     )}
                   </div>
 
-                  <div
-                    className={clsx('sm:col-span-1', { 'mb-6': errors.cep })}
-                  >
+                  <div className="sm:col-span-1">
                     <Button
                       type="button"
-                      className="w-full"
+                      className="w-full py-6"
                       disabled={loading}
                       onClick={() => handleGetAddress()}
                     >
@@ -376,66 +496,6 @@ export function AddButton() {
                     {errors.city && (
                       <small className="text-red-500">
                         {errors.city.message}
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <Controller
-                      name="email"
-                      control={control}
-                      defaultValue=""
-                      render={({ field }) => (
-                        <InputText
-                          label="E-mail"
-                          labelFor="email"
-                          placeholder="Ex.: joaodasilva@gmail.com"
-                          isRequired
-                          disabled={isSubmitting}
-                          isDisabled={isSubmitting}
-                          {...field}
-                        />
-                      )}
-                    />
-
-                    {errors.email && (
-                      <small className="text-red-500">
-                        {errors.email.message}
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <Controller
-                      name="phone"
-                      control={control}
-                      defaultValue=""
-                      render={({ field }) => (
-                        <InputFormatPhone
-                          format={
-                            phoneType === 'celular'
-                              ? '(##) # ####-####'
-                              : '(##) ####-####'
-                          }
-                          mask="_"
-                          labelFor="phone"
-                          placeholder={
-                            phoneType === 'celular'
-                              ? 'Ex.: (21) 9 0000-0000'
-                              : 'Ex.: (21) 0000-0000'
-                          }
-                          isRequired
-                          phoneType={(v: string) => handlePhoneType(v)}
-                          disabled={isSubmitting}
-                          isDisabled={isSubmitting}
-                          {...field}
-                        />
-                      )}
-                    />
-
-                    {errors.phone && (
-                      <small className="text-red-500">
-                        {errors.phone.message}
                       </small>
                     )}
                   </div>

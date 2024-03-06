@@ -12,11 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-import {
-  CircleNotch,
-  DotsThreeVertical,
-  DownloadSimple,
-} from '@phosphor-icons/react'
+import { CircleNotch, DotsThreeVertical } from '@phosphor-icons/react'
 import { useCallback, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
@@ -31,35 +27,30 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import axios from 'axios'
-import useSWR, { mutate } from 'swr'
+import { mutate } from 'swr'
 import { toast } from 'react-toastify'
 import InputText from '@/components/InputText/InputText'
-import { embargoedWorks } from './schema'
+import { responsaveis } from './schema'
 import clsx from 'clsx'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import InputWithMask from '@/components/InputWithMask/InputWithMask'
-import SelectDropdown from '@/components/SelectDropdown/SelectDropdown'
-import { Textarea } from '@/components/ui/textarea'
-import { SelectMapper } from '@/utils/mappers'
-import Link from 'next/link'
-import { ChangeFileToBase64 } from '@/utils/helpers'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
+import InputFormatCPFCNPJ from '@/components/InputFormatCpfcnpj/InputFormatCpfcnpj'
+import InputFormatPhone from '@/components/InputFormatPhone/InputFormatPhone'
 
 const schema = z.object({
-  constructionManagerId: z
-    .string()
-    .nonempty('O campo Responsável da Obra é obrigatório.'),
-  embargoNumber: z
-    .string()
-    .nonempty('O campo Número do Auto de Embargo é obrigatório.'),
+  name: z.string().nonempty('O campo Nome Completo é obrigatório.'),
+  document: z.string().nonempty('O campo CPF/CNPJ é obrigatório.'),
   cep: z.string().nonempty('O campo CEP é obrigatório.'),
   place: z.string().nonempty('O campo Logradouro é obrigatório.'),
   complement: z.string().optional(),
   number: z.string().optional(),
   neighborhood: z.string().nonempty('O campo Bairro é obrigatório.'),
   city: z.string().nonempty('O campo Cidade é obrigatório.'),
-  file: z.any().optional(),
+  phone: z.string().nonempty('O campo Telefone é obrigatório'),
+  email: z
+    .string()
+    .nonempty('O campo e-mail é obrigatório.')
+    .email('Informe um e-mail válido.'),
 })
 
 type FormProps = z.infer<typeof schema>
@@ -68,16 +59,11 @@ interface DataTableRowActionsProps<TData> {
   row: Row<TData>
 }
 
-type SelectedData = z.infer<typeof embargoedWorks>
-
-const fetcher = (url: string) => axios.get(url).then((res) => res.data)
+type SelectedData = z.infer<typeof responsaveis>
 
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const { data } = useSWR('/api/meio-ambiente/responsavel', fetcher)
-  const managers = SelectMapper(data?.meioAmbienteManagers)
-
   const [openEdit, setOpenEdit] = useState(false)
   const [selectedToEdit, setSelectedToEdit] = useState<SelectedData | null>(
     null,
@@ -90,15 +76,15 @@ export function DataTableRowActions<TData>({
 
   const [openView, setOpenView] = useState(false)
 
-  const embargo = embargoedWorks.parse(row.original)
+  const responsavel = responsaveis.parse(row.original)
 
-  const handleEditDialog = (embargo: SelectedData) => {
-    setSelectedToEdit(embargo)
+  const handleEditDialog = (responsavel: SelectedData) => {
+    setSelectedToEdit(responsavel)
     setOpenEdit(true)
   }
 
-  const handleDeleteDialog = (embargo: SelectedData) => {
-    setSelectedToDelete(embargo)
+  const handleDeleteDialog = (responsavel: SelectedData) => {
+    setSelectedToDelete(responsavel)
     setOpenDelete(true)
   }
 
@@ -109,7 +95,6 @@ export function DataTableRowActions<TData>({
     setError,
     clearErrors,
     setValue,
-    register,
     formState: { errors, isSubmitting },
   } = useForm<FormProps>({
     resolver: zodResolver(schema),
@@ -120,7 +105,7 @@ export function DataTableRowActions<TData>({
     async (data: any) => {
       setLoading(true)
 
-      let newData: any = { ...data, id: embargo.id }
+      let newData: any = data
 
       if (data.number === '') {
         const { number: noNumber, ...rest } = newData
@@ -128,7 +113,7 @@ export function DataTableRowActions<TData>({
       } else {
         newData = {
           ...newData,
-          number: newData.number.trim(),
+          number: data.number.trim(),
         }
       }
 
@@ -137,35 +122,18 @@ export function DataTableRowActions<TData>({
         newData = rest
       }
 
-      let allData: any
-
-      if (data.file[0]) {
-        await axios
-          .post('/api/upload-file', {
-            file: await ChangeFileToBase64(data.file[0]),
-          })
-          .then(
-            (result) =>
-              (allData = {
-                ...newData,
-                embargoFile: result?.data,
-              }),
-          )
-      } else {
-        allData = {
-          ...newData,
-          embargoFile: '',
-        }
+      const allData = {
+        ...newData,
+        name: newData?.name.toUpperCase(),
+        id: responsavel.id,
       }
 
-      const { file: noFile, ...rest } = allData
-
       await axios
-        .patch('/api/meio-ambiente/obras-embargadas', rest)
+        .patch('/api/urbanismo/responsavel', allData)
         .then((response) => {
           setOpenEdit(false)
           toast.success(response.data.message)
-          mutate('/api/meio-ambiente/obras-embargadas')
+          mutate('/api/urbanismo/responsavel')
         })
         .catch((error) => {
           toast.error(error.response.data.message)
@@ -173,7 +141,7 @@ export function DataTableRowActions<TData>({
 
       setLoading(false)
     },
-    [embargo],
+    [responsavel],
   )
 
   const [loadingDelete, setLoadingDelete] = useState(false)
@@ -181,11 +149,13 @@ export function DataTableRowActions<TData>({
     setLoadingDelete(true)
 
     await axios
-      .delete('/api/meio-ambiente/obras-embargadas', { data: { id: data } })
+      .delete('/api/urbanismo/responsavel', {
+        data: { id: data },
+      })
       .then((response) => {
         setOpenDelete(false)
         toast.success(response.data.message)
-        mutate('/api/meio-ambiente/obras-embargadas')
+        mutate('/api/urbanismo/responsavel')
       })
       .catch((error) => {
         toast.error(error.response.data.message)
@@ -223,6 +193,20 @@ export function DataTableRowActions<TData>({
     }
   }
 
+  const [docType, setDocType] = useState(
+    responsavel.documento.length === 14 ? 'cpf' : 'cnpj',
+  )
+  const handleDocType = (value: string) => {
+    setDocType(value)
+  }
+
+  const [phoneType, setPhoneType] = useState(
+    responsavel.telefone.length === 14 ? 'fixo' : 'celular',
+  )
+  const handlePhoneType = (value: string) => {
+    setPhoneType(value)
+  }
+
   return (
     <>
       <DropdownMenu>
@@ -245,7 +229,7 @@ export function DataTableRowActions<TData>({
 
           <DropdownMenuItem
             className="cursor-pointer"
-            onClick={() => handleEditDialog(embargo)}
+            onClick={() => handleEditDialog(responsavel)}
           >
             Editar
           </DropdownMenuItem>
@@ -254,7 +238,7 @@ export function DataTableRowActions<TData>({
 
           <DropdownMenuItem
             className="cursor-pointer"
-            onClick={() => handleDeleteDialog(embargo)}
+            onClick={() => handleDeleteDialog(responsavel)}
           >
             Excluir
           </DropdownMenuItem>
@@ -278,11 +262,74 @@ export function DataTableRowActions<TData>({
             <ScrollArea className="h-[600px] sm:h-[500px] 2xl:h-fit w-full">
               <div className="space-y-4 pr-3">
                 <div className="grid grid-cols-1 lg:grid-cols-4 items-end gap-4">
+                  <div className="sm:col-span-2">
+                    <Controller
+                      name="name"
+                      control={control}
+                      defaultValue={selectedToEdit?.nome || ''}
+                      render={({ field }) => (
+                        <InputText
+                          label="Nome Completo"
+                          labelFor="name"
+                          placeholder="Ex.: João da Silva"
+                          isRequired
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+
+                    {errors.name && (
+                      <small className="text-red-500">
+                        {errors.name.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <Controller
+                      name="document"
+                      control={control}
+                      defaultValue={selectedToEdit?.documento || ''}
+                      render={({ field }) => (
+                        <InputFormatCPFCNPJ
+                          defaultDocumentValue={
+                            responsavel.documento.length === 14 ? 'cpf' : 'cnpj'
+                          }
+                          format={
+                            docType === 'cnpj'
+                              ? '##.###.###/####-##'
+                              : '###.###.###-##'
+                          }
+                          mask="_"
+                          labelFor="document"
+                          placeholder={
+                            docType === 'cnpj'
+                              ? 'Ex.: 00.000.000/0000-00'
+                              : 'Ex.: 000.000.000-00'
+                          }
+                          isRequired
+                          docType={(v: string) => handleDocType(v)}
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+
+                    {errors.document && (
+                      <small className="text-red-500">
+                        {errors.document.message}
+                      </small>
+                    )}
+                  </div>
+
                   <div className="sm:col-span-3">
                     <Controller
                       name="cep"
                       control={control}
-                      defaultValue={selectedToEdit?.cep as string}
+                      defaultValue={selectedToEdit?.cep || ''}
                       render={({ field }) => (
                         <InputWithMask
                           format="#####-###"
@@ -328,7 +375,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="place"
                       control={control}
-                      defaultValue={selectedToEdit?.place as string}
+                      defaultValue={selectedToEdit?.place || ''}
                       render={({ field }) => (
                         <InputText
                           label="Logradouro"
@@ -353,7 +400,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="number"
                       control={control}
-                      defaultValue={(selectedToEdit?.number as string) || ''}
+                      defaultValue={selectedToEdit?.number}
                       render={({ field }) => (
                         <InputWithMask
                           format="#######"
@@ -372,9 +419,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="complement"
                       control={control}
-                      defaultValue={
-                        (selectedToEdit?.complement as string) || ''
-                      }
+                      defaultValue={selectedToEdit?.complement}
                       render={({ field }) => (
                         <InputText
                           label="Complemento"
@@ -392,7 +437,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="neighborhood"
                       control={control}
-                      defaultValue={selectedToEdit?.neighborhood as string}
+                      defaultValue={selectedToEdit?.neighborhood || ''}
                       render={({ field }) => (
                         <InputText
                           label="Bairro"
@@ -417,7 +462,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="city"
                       control={control}
-                      defaultValue={selectedToEdit?.city as string}
+                      defaultValue={selectedToEdit?.city || ''}
                       render={({ field }) => (
                         <InputText
                           label="Cidade"
@@ -438,42 +483,16 @@ export function DataTableRowActions<TData>({
                     )}
                   </div>
 
-                  <div className="col-span-full">
+                  <div className="sm:col-span-2">
                     <Controller
-                      name="constructionManagerId"
+                      name="email"
                       control={control}
-                      defaultValue={selectedToEdit?.responsavelId as string}
-                      render={({ field: { onChange, value } }) => (
-                        <SelectDropdown
-                          valueDf={value}
-                          itemSelected={onChange}
-                          isRequired
-                          name="responsável da obra"
-                          label="Responsável da Obra"
-                          labelFor="constructionManagerId"
-                          items={managers}
-                          isDisabled={isSubmitting}
-                        />
-                      )}
-                    />
-
-                    {errors.constructionManagerId && (
-                      <small className="text-red-500">
-                        {errors.constructionManagerId.message}
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="col-span-full">
-                    <Controller
-                      name="embargoNumber"
-                      control={control}
-                      defaultValue={selectedToEdit?.numero as string}
+                      defaultValue={selectedToEdit?.email || ''}
                       render={({ field }) => (
                         <InputText
-                          label="Número do Auto de Embargo"
-                          labelFor="embargoNumber"
-                          placeholder="Ex.: 00000000000"
+                          label="E-mail"
+                          labelFor="email"
+                          placeholder="Ex.: joaodasilva@gmail.com"
                           isRequired
                           disabled={isSubmitting}
                           isDisabled={isSubmitting}
@@ -482,42 +501,56 @@ export function DataTableRowActions<TData>({
                       )}
                     />
 
-                    {errors.embargoNumber && (
+                    {errors.email && (
                       <small className="text-red-500">
-                        {errors.embargoNumber.message}
+                        {errors.email.message}
                       </small>
                     )}
                   </div>
 
-                  <div className="col-span-full">
-                    <Label
-                      htmlFor="embargoedFile"
-                      className={clsx(
-                        'focus:outline-none focus-visible:ring-0',
-                        {
-                          'opacity-20': isSubmitting,
-                        },
+                  <div className="sm:col-span-2">
+                    <Controller
+                      name="phone"
+                      control={control}
+                      defaultValue={selectedToEdit?.telefone || ''}
+                      render={({ field }) => (
+                        <InputFormatPhone
+                          defaultPhoneValue={
+                            responsavel.telefone.length === 14
+                              ? 'fixo'
+                              : 'celular'
+                          }
+                          format={
+                            phoneType === 'celular'
+                              ? '(##) # ####-####'
+                              : '(##) ####-####'
+                          }
+                          mask="_"
+                          labelFor="phone"
+                          placeholder={
+                            phoneType === 'celular'
+                              ? 'Ex.: (21) 9 0000-0000'
+                              : 'Ex.: (21) 0000-0000'
+                          }
+                          isRequired
+                          phoneType={(v: string) => handlePhoneType(v)}
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
                       )}
-                    >
-                      Cópia do Autor de Embargo:
-                    </Label>
-
-                    <Input
-                      id="embargoedFile"
-                      type="file"
-                      {...register('file')}
-                      className="mt-1 focus:outline-none focus-visible:ring-0 py-3 h-fit cursor-pointer border-zinc-300"
-                      accept="application/pdf"
-                      disabled={isSubmitting}
                     />
+
+                    {errors.phone && (
+                      <small className="text-red-500">
+                        {errors.phone.message}
+                      </small>
+                    )}
                   </div>
                 </div>
 
                 <AlertDialogFooter>
-                  <AlertDialogCancel
-                    disabled={isSubmitting}
-                    className="focus:outline-none focus-visible:ring-0"
-                  >
+                  <AlertDialogCancel disabled={isSubmitting}>
                     Cancelar
                   </AlertDialogCancel>
                   <Button type="submit" disabled={isSubmitting}>
@@ -526,7 +559,7 @@ export function DataTableRowActions<TData>({
                         <CircleNotch size={24} className="animate-spin" />
                       </div>
                     ) : (
-                      'Adicionar'
+                      'Alterar'
                     )}
                   </Button>
                 </AlertDialogFooter>
@@ -547,15 +580,15 @@ export function DataTableRowActions<TData>({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Você está excluindo uma obra embargada!
+              Você está excluindo um responsável!
             </AlertDialogTitle>
 
             <AlertDialogDescription>
-              A obra{' '}
+              O responsável{' '}
               <span className="font-medium text-red-600">
-                {selectedToDelete?.numero}
+                {selectedToDelete?.nome}
               </span>{' '}
-              está sendo excluída. Você tem certeza que deseja fazer isso?
+              está sendo excluído, você tem certeza que deseja excluí-lo?
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -590,10 +623,10 @@ export function DataTableRowActions<TData>({
           <AlertDialogHeader>
             <div className="px-4 sm:px-0">
               <h3 className="text-base font-semibold leading-4 text-gray-900">
-                Obra Embargada: {embargo.numero}
+                {responsavel.nome}
               </h3>
               <p className="mt-1 max-w-2xl text-sm leading-4 text-gray-500">
-                Todos os dados da obra.
+                Todos os dados do(a) responsável.
               </p>
             </div>
           </AlertDialogHeader>
@@ -602,58 +635,51 @@ export function DataTableRowActions<TData>({
             <dl className="divide-y divide-gray-100">
               <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                 <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  Número do Auto de Embargo
+                  Nome Completo
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {embargo.numero}
+                  {responsavel.nome}
                 </dd>
               </div>
 
               <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                 <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  Responsável
+                  CPF/CNPJ
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {embargo.responsavel}
+                  {responsavel.documento}
                 </dd>
               </div>
 
               <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                 <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  Telefone do Responsável
+                  E-mail
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {embargo.telefone}
+                  {responsavel.email}
                 </dd>
               </div>
 
               <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                 <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  Endereço da Obra
+                  Telefone
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {embargo.place}
-                  {embargo.number && `, ${embargo.number}`}
-                  {embargo.complement && ` - ${embargo.complement}`}
-                  {` - ${embargo.neighborhood}`}
-                  {` - ${embargo.city}`}
-                  {` - ${embargo.cep}`}
+                  {responsavel.telefone}
                 </dd>
               </div>
 
               <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                <dt className="text-sm font-medium leading-6 text-gray-900">
-                  Cópia do Auto de Embargo
+                <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
+                  Endereço
                 </dt>
-                <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  <Link
-                    href={embargo.file}
-                    download="download"
-                    target="_blank"
-                    className="w-10 h-10 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-center rounded"
-                  >
-                    <DownloadSimple size={24} className="text-blue-600" />
-                  </Link>
+                <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  {responsavel.place}
+                  {responsavel.number && `, ${responsavel.number}`}
+                  {responsavel.complement && ` - ${responsavel.complement}`}
+                  {` - ${responsavel.neighborhood}`}
+                  {` - ${responsavel.city}`}
+                  {` - ${responsavel.cep}`}
                 </dd>
               </div>
             </dl>

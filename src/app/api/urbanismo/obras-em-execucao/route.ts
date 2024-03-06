@@ -3,19 +3,19 @@ import { db } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET() {
-  const embargoedWorks = await db.embargoedWorks.findMany({
+  const inProgress = await db.worksInProgress.findMany({
     include: {
       constructionManager: true,
     },
   })
-  return NextResponse.json({ embargoedWorks }, { status: 200 })
+  return NextResponse.json({ inProgress }, { status: 200 })
 }
 
 export async function POST(request: NextRequest) {
   const data = await request.json()
 
   try {
-    await db.embargoedWorks.create({
+    await db.worksInProgress.create({
       data,
     })
 
@@ -86,7 +86,7 @@ export async function DELETE(request: NextRequest) {
   const { id } = await request.json()
 
   try {
-    await db.embargoedWorks.delete({
+    await db.worksInProgress.delete({
       where: {
         id,
       },

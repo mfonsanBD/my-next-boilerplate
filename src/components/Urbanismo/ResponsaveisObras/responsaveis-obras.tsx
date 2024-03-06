@@ -9,8 +9,8 @@ import { ManegersMapper } from '@/utils/mappers'
 const fetcher = (url: string) => axios.get(url).then((res) => res.data)
 
 export function ResponsaveisObrasComp() {
-  const { data, isLoading } = useSWR('/api/meio-ambiente/responsavel', fetcher)
-  const managers = ManegersMapper(data?.meioAmbienteManagers)
+  const { data, isLoading } = useSWR('/api/urbanismo/responsavel', fetcher)
+  const managers = ManegersMapper(data?.urbanismoManagers)
 
   return <DataTable data={managers} columns={columns} isLoading={isLoading} />
 }

@@ -129,11 +129,11 @@ export function DataTableRowActions<TData>({
       }
 
       await axios
-        .patch('/api/meio-ambiente/responsavel-meio-ambiente', allData)
+        .patch('/api/meio-ambiente/responsavel', allData)
         .then((response) => {
           setOpenEdit(false)
           toast.success(response.data.message)
-          mutate('/api/meio-ambiente/responsavel-meio-ambiente')
+          mutate('/api/meio-ambiente/responsavel')
         })
         .catch((error) => {
           toast.error(error.response.data.message)
@@ -149,13 +149,13 @@ export function DataTableRowActions<TData>({
     setLoadingDelete(true)
 
     await axios
-      .delete('/api/meio-ambiente/responsavel-meio-ambiente', {
+      .delete('/api/meio-ambiente/responsavel', {
         data: { id: data },
       })
       .then((response) => {
         setOpenDelete(false)
         toast.success(response.data.message)
-        mutate('/api/meio-ambiente/responsavel-meio-ambiente')
+        mutate('/api/meio-ambiente/responsavel')
       })
       .catch((error) => {
         toast.error(error.response.data.message)

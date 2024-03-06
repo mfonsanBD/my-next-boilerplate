@@ -25,7 +25,11 @@ const navigation = [
     href: '/meio-ambiente/obras-embargadas',
     area: 'meio-ambiente',
   },
-  { name: 'Urbanismo', href: '/urbanismo', area: 'urbanismo' },
+  {
+    name: 'Urbanismo',
+    href: '/urbanismo/obras-em-execucao',
+    area: 'urbanismo',
+  },
   {
     name: 'Vigilância Sanitária',
     href: '/vigilancia-sanitaria',

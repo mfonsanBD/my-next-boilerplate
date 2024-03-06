@@ -34,7 +34,7 @@ import axios from 'axios'
 import useSWR, { mutate } from 'swr'
 import { toast } from 'react-toastify'
 import InputText from '@/components/InputText/InputText'
-import { embargoedWorks } from './schema'
+import { workinprogress } from './schema'
 import clsx from 'clsx'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import InputWithMask from '@/components/InputWithMask/InputWithMask'
@@ -68,14 +68,14 @@ interface DataTableRowActionsProps<TData> {
   row: Row<TData>
 }
 
-type SelectedData = z.infer<typeof embargoedWorks>
+type SelectedData = z.infer<typeof workinprogress>
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data)
 
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const { data } = useSWR('/api/meio-ambiente/responsavel', fetcher)
+  const { data } = useSWR('/api/urbanismo/responsavel', fetcher)
   const managers = SelectMapper(data?.meioAmbienteManagers)
 
   const [openEdit, setOpenEdit] = useState(false)
@@ -90,7 +90,7 @@ export function DataTableRowActions<TData>({
 
   const [openView, setOpenView] = useState(false)
 
-  const embargo = embargoedWorks.parse(row.original)
+  const emExecucao = workinprogress.parse(row.original)
 
   const handleEditDialog = (embargo: SelectedData) => {
     setSelectedToEdit(embargo)
@@ -120,7 +120,7 @@ export function DataTableRowActions<TData>({
     async (data: any) => {
       setLoading(true)
 
-      let newData: any = { ...data, id: embargo.id }
+      let newData: any = { ...data, id: emExecucao.id }
 
       if (data.number === '') {
         const { number: noNumber, ...rest } = newData
@@ -173,7 +173,7 @@ export function DataTableRowActions<TData>({
 
       setLoading(false)
     },
-    [embargo],
+    [emExecucao],
   )
 
   const [loadingDelete, setLoadingDelete] = useState(false)
@@ -181,11 +181,11 @@ export function DataTableRowActions<TData>({
     setLoadingDelete(true)
 
     await axios
-      .delete('/api/meio-ambiente/obras-embargadas', { data: { id: data } })
+      .delete('/api/urbanismo/obras-em-execucao', { data: { id: data } })
       .then((response) => {
         setOpenDelete(false)
         toast.success(response.data.message)
-        mutate('/api/meio-ambiente/obras-embargadas')
+        mutate('/api/urbanismo/obras-em-execucao')
       })
       .catch((error) => {
         toast.error(error.response.data.message)
@@ -245,7 +245,7 @@ export function DataTableRowActions<TData>({
 
           <DropdownMenuItem
             className="cursor-pointer"
-            onClick={() => handleEditDialog(embargo)}
+            onClick={() => handleEditDialog(emExecucao)}
           >
             Editar
           </DropdownMenuItem>
@@ -254,7 +254,7 @@ export function DataTableRowActions<TData>({
 
           <DropdownMenuItem
             className="cursor-pointer"
-            onClick={() => handleDeleteDialog(embargo)}
+            onClick={() => handleDeleteDialog(emExecucao)}
           >
             Excluir
           </DropdownMenuItem>
@@ -468,7 +468,9 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="embargoNumber"
                       control={control}
-                      defaultValue={selectedToEdit?.numero as string}
+                      defaultValue={
+                        selectedToEdit?.numeroAutoInfracao as string
+                      }
                       render={({ field }) => (
                         <InputText
                           label="Número do Auto de Embargo"
@@ -547,13 +549,13 @@ export function DataTableRowActions<TData>({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Você está excluindo uma obra embargada!
+              Você está excluindo uma obra em execução!
             </AlertDialogTitle>
 
             <AlertDialogDescription>
               A obra{' '}
               <span className="font-medium text-red-600">
-                {selectedToDelete?.numero}
+                {selectedToDelete?.numeroAutoInfracao}
               </span>{' '}
               está sendo excluída. Você tem certeza que deseja fazer isso?
             </AlertDialogDescription>
@@ -590,7 +592,7 @@ export function DataTableRowActions<TData>({
           <AlertDialogHeader>
             <div className="px-4 sm:px-0">
               <h3 className="text-base font-semibold leading-4 text-gray-900">
-                Obra Embargada: {embargo.numero}
+                Obra Em Execução: {emExecucao.numeroAutoInfracao}
               </h3>
               <p className="mt-1 max-w-2xl text-sm leading-4 text-gray-500">
                 Todos os dados da obra.
@@ -602,10 +604,51 @@ export function DataTableRowActions<TData>({
             <dl className="divide-y divide-gray-100">
               <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                 <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  Número do Auto de Embargo
+                  N° Auto de Infração
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {embargo.numero}
+                  {emExecucao.numeroAutoInfracao}
+                </dd>
+              </div>
+
+              <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <dt className="text-sm font-medium leading-6 text-gray-900">
+                  Cópia Auto de Infração
+                </dt>
+                <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                  <Link
+                    href={emExecucao.fileAutoInfracao}
+                    download="download"
+                    target="_blank"
+                    className="w-10 h-10 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-center rounded"
+                  >
+                    <DownloadSimple size={24} className="text-blue-600" />
+                  </Link>
+                </dd>
+              </div>
+
+              <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
+                  N° da Intimação
+                </dt>
+                <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  {emExecucao.numeroIntimacao}
+                </dd>
+              </div>
+
+              <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <dt className="text-sm font-medium leading-6 text-gray-900">
+                  Cópia da Intimação
+                </dt>
+                <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                  <Link
+                    href={emExecucao.fileIntimacao}
+                    download="download"
+                    target="_blank"
+                    className="w-10 h-10 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-center rounded"
+                  >
+                    <DownloadSimple size={24} className="text-blue-600" />
+                  </Link>
                 </dd>
               </div>
 
@@ -614,7 +657,7 @@ export function DataTableRowActions<TData>({
                   Responsável
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {embargo.responsavel}
+                  {emExecucao.responsavel}
                 </dd>
               </div>
 
@@ -623,7 +666,7 @@ export function DataTableRowActions<TData>({
                   Telefone do Responsável
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {embargo.telefone}
+                  {emExecucao.telefone}
                 </dd>
               </div>
 
@@ -632,28 +675,12 @@ export function DataTableRowActions<TData>({
                   Endereço da Obra
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {embargo.place}
-                  {embargo.number && `, ${embargo.number}`}
-                  {embargo.complement && ` - ${embargo.complement}`}
-                  {` - ${embargo.neighborhood}`}
-                  {` - ${embargo.city}`}
-                  {` - ${embargo.cep}`}
-                </dd>
-              </div>
-
-              <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                <dt className="text-sm font-medium leading-6 text-gray-900">
-                  Cópia do Auto de Embargo
-                </dt>
-                <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  <Link
-                    href={embargo.file}
-                    download="download"
-                    target="_blank"
-                    className="w-10 h-10 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-center rounded"
-                  >
-                    <DownloadSimple size={24} className="text-blue-600" />
-                  </Link>
+                  {emExecucao.place}
+                  {emExecucao.number && `, ${emExecucao.number}`}
+                  {emExecucao.complement && ` - ${emExecucao.complement}`}
+                  {` - ${emExecucao.neighborhood}`}
+                  {` - ${emExecucao.city}`}
+                  {` - ${emExecucao.cep}`}
                 </dd>
               </div>
             </dl>

@@ -87,3 +87,24 @@ export const EmbargoedWorksMapper = (embargos: any[]) => {
       }))
     : []
 }
+
+export const WorksInProgressMapper = (works: any[]) => {
+  return works
+    ? works.map((work) => ({
+        id: work.id,
+        numeroAutoInfracao: work.infractionNoticeNumber || '',
+        fileAutoInfracao: work.infractionNoticeFile || '',
+        numeroIntimacao: work.intimationNumber || '',
+        fileIntimacao: work.intimationFile || '',
+        responsavel: work.constructionManager.name,
+        responsavelId: work.constructionManager.id,
+        telefone: work.constructionManager.phone,
+        place: work.place,
+        number: work.number || '',
+        complement: work.complement || '',
+        neighborhood: work.neighborhood,
+        city: work.city,
+        cep: work.cep,
+      }))
+    : []
+}
