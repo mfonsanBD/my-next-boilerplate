@@ -1,4 +1,4 @@
-import Base from '@/components/Base/Base'
+import BaseDefault from '@/components/Base/BaseDefault'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -6,7 +6,7 @@ export const metadata: Metadata = {
 }
 
 const PainelControle = () => (
-  <Base>
+  <BaseDefault>
     <div className="bg-white">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <h1 className="text-2xl font-bold tracking-tight text-slate-700">
@@ -20,7 +20,7 @@ const PainelControle = () => (
         <p>Widget</p>
       </div>
     </section>
-  </Base>
+  </BaseDefault>
 )
 
 export default PainelControle

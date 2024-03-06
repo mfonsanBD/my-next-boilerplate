@@ -44,13 +44,13 @@ export default function UserDropdown() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link className="cursor-pointer" href="/perfil">
+          <Link className="cursor-pointer" href="#">
             Perfil
           </Link>
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
-          <Link className="cursor-pointer" href="/usuarios">
+          <Link className="cursor-pointer" href="#">
             Usuários
           </Link>
         </DropdownMenuItem>

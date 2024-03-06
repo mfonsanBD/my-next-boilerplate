@@ -1,4 +1,4 @@
-import Base from '@/components/Base/Base'
+import BaseDefault from '@/components/Base/BaseDefault'
 import TableArea from '@/components/TableArea/TableArea'
 import TitleArea from '@/components/TitleArea/TitleArea'
 import { Metadata } from 'next'
@@ -8,13 +8,13 @@ export const metadata: Metadata = {
 }
 
 const VigilanciaSanitaria = () => (
-  <Base>
+  <BaseDefault>
     <TitleArea title="Vigilância Sanitaria" />
 
     <TableArea>
       <p>Área da Vigilância Sanitaria</p>
     </TableArea>
-  </Base>
+  </BaseDefault>
 )
 
 export default VigilanciaSanitaria
