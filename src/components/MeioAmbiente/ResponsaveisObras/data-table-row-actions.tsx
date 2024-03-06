@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 'use client'
 
 import { Row } from '@tanstack/react-table'
@@ -11,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-import { Circle, CircleNotch, DotsThreeVertical } from '@phosphor-icons/react'
+import { CircleNotch, DotsThreeVertical } from '@phosphor-icons/react'
 import { useCallback, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
@@ -26,20 +27,19 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import axios from 'axios'
-import useSWR, { mutate } from 'swr'
+import { mutate } from 'swr'
 import { toast } from 'react-toastify'
 import InputText from '@/components/InputText/InputText'
-import { permissionarios } from './schema'
+import { responsaveis } from './schema'
 import clsx from 'clsx'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import InputWithMask from '@/components/InputWithMask/InputWithMask'
-import SelectDropdown from '@/components/SelectDropdown/SelectDropdown'
-import { Textarea } from '@/components/ui/textarea'
-import { SelectMapper } from '@/utils/mappers'
+import InputFormatCPFCNPJ from '@/components/InputFormatCpfcnpj/InputFormatCpfcnpj'
+import InputFormatPhone from '@/components/InputFormatPhone/InputFormatPhone'
 
 const schema = z.object({
   name: z.string().nonempty('O campo Nome Completo é obrigatório.'),
-  cpf: z.string().nonempty('O campo CPF é obrigatório.'),
+  document: z.string().nonempty('O campo CPF/CNPJ é obrigatório.'),
   cep: z.string().nonempty('O campo CEP é obrigatório.'),
   place: z.string().nonempty('O campo Logradouro é obrigatório.'),
   complement: z.string().optional(),
@@ -51,8 +51,6 @@ const schema = z.object({
     .string()
     .nonempty('O campo e-mail é obrigatório.')
     .email('Informe um e-mail válido.'),
-  modalType: z.string().nonempty('O campo Tipo de Modal é obrigatório'),
-  notes: z.string().optional(),
 })
 
 type FormProps = z.infer<typeof schema>
@@ -61,16 +59,11 @@ interface DataTableRowActionsProps<TData> {
   row: Row<TData>
 }
 
-type SelectedData = z.infer<typeof permissionarios>
-
-const fetcher = (url: string) => axios.get(url).then((res) => res.data)
+type SelectedData = z.infer<typeof responsaveis>
 
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const { data } = useSWR('/api/modaltype', fetcher)
-  const types = SelectMapper(data?.modalTypes)
-
   const [openEdit, setOpenEdit] = useState(false)
   const [selectedToEdit, setSelectedToEdit] = useState<SelectedData | null>(
     null,
@@ -83,15 +76,15 @@ export function DataTableRowActions<TData>({
 
   const [openView, setOpenView] = useState(false)
 
-  const permissionario = permissionarios.parse(row.original)
+  const responsavel = responsaveis.parse(row.original)
 
-  const handleEditDialog = (permissionario: SelectedData) => {
-    setSelectedToEdit(permissionario)
+  const handleEditDialog = (responsavel: SelectedData) => {
+    setSelectedToEdit(responsavel)
     setOpenEdit(true)
   }
 
-  const handleDeleteDialog = (permissionario: SelectedData) => {
-    setSelectedToDelete(permissionario)
+  const handleDeleteDialog = (responsavel: SelectedData) => {
+    setSelectedToDelete(responsavel)
     setOpenDelete(true)
   }
 
@@ -112,24 +105,35 @@ export function DataTableRowActions<TData>({
     async (data: any) => {
       setLoading(true)
 
-      const newdata = {
-        ...data,
-        name: data.name.toUpperCase(),
-        number: data.number ? data.number.trim() : null,
-        complement: data.complement ? data.complement.trim() : null,
-        notes: data.notes ? data.notes.trim() : null,
-        modalTypeId: data.modalType,
-        id: permissionario.id,
+      let newData: any = data
+
+      if (data.number === '') {
+        const { number: noNumber, ...rest } = newData
+        newData = rest
+      } else {
+        newData = {
+          ...newData,
+          number: data.number.trim(),
+        }
       }
-      // eslint-disable-next-line no-unused-vars
-      const { modalType: newModalType, ...rest } = newdata
+
+      if (data.complement === '') {
+        const { complement: noComplement, ...rest } = newData
+        newData = rest
+      }
+
+      const allData = {
+        ...newData,
+        name: newData?.name.toUpperCase(),
+        id: responsavel.id,
+      }
 
       await axios
-        .patch('/api/transporte/permissionario-van', rest)
+        .patch('/api/meio-ambiente/responsavel-meio-ambiente', allData)
         .then((response) => {
           setOpenEdit(false)
           toast.success(response.data.message)
-          mutate('/api/transporte/permissionario-van')
+          mutate('/api/meio-ambiente/responsavel-meio-ambiente')
         })
         .catch((error) => {
           toast.error(error.response.data.message)
@@ -137,7 +141,7 @@ export function DataTableRowActions<TData>({
 
       setLoading(false)
     },
-    [permissionario],
+    [responsavel],
   )
 
   const [loadingDelete, setLoadingDelete] = useState(false)
@@ -145,11 +149,13 @@ export function DataTableRowActions<TData>({
     setLoadingDelete(true)
 
     await axios
-      .delete('/api/transporte/permissionario-van', { data: { id: data } })
+      .delete('/api/meio-ambiente/responsavel-meio-ambiente', {
+        data: { id: data },
+      })
       .then((response) => {
         setOpenDelete(false)
         toast.success(response.data.message)
-        mutate('/api/transporte/permissionario-van')
+        mutate('/api/meio-ambiente/responsavel-meio-ambiente')
       })
       .catch((error) => {
         toast.error(error.response.data.message)
@@ -187,6 +193,20 @@ export function DataTableRowActions<TData>({
     }
   }
 
+  const [docType, setDocType] = useState(
+    responsavel.documento.length === 14 ? 'cpf' : 'cnpj',
+  )
+  const handleDocType = (value: string) => {
+    setDocType(value)
+  }
+
+  const [phoneType, setPhoneType] = useState(
+    responsavel.telefone.length === 14 ? 'fixo' : 'celular',
+  )
+  const handlePhoneType = (value: string) => {
+    setPhoneType(value)
+  }
+
   return (
     <>
       <DropdownMenu>
@@ -209,7 +229,7 @@ export function DataTableRowActions<TData>({
 
           <DropdownMenuItem
             className="cursor-pointer"
-            onClick={() => handleEditDialog(permissionario)}
+            onClick={() => handleEditDialog(responsavel)}
           >
             Editar
           </DropdownMenuItem>
@@ -218,7 +238,7 @@ export function DataTableRowActions<TData>({
 
           <DropdownMenuItem
             className="cursor-pointer"
-            onClick={() => handleDeleteDialog(permissionario)}
+            onClick={() => handleDeleteDialog(responsavel)}
           >
             Excluir
           </DropdownMenuItem>
@@ -269,17 +289,28 @@ export function DataTableRowActions<TData>({
 
                   <div className="sm:col-span-2">
                     <Controller
-                      name="cpf"
+                      name="document"
                       control={control}
-                      defaultValue={selectedToEdit?.cpf || ''}
+                      defaultValue={selectedToEdit?.documento || ''}
                       render={({ field }) => (
-                        <InputWithMask
-                          format="###.###.###-##"
+                        <InputFormatCPFCNPJ
+                          defaultDocumentValue={
+                            responsavel.documento.length === 14 ? 'cpf' : 'cnpj'
+                          }
+                          format={
+                            docType === 'cnpj'
+                              ? '##.###.###/####-##'
+                              : '###.###.###-##'
+                          }
                           mask="_"
-                          label="CPF"
-                          labelFor="cpf"
-                          placeholder="Ex.: 000.000.000-00"
+                          labelFor="document"
+                          placeholder={
+                            docType === 'cnpj'
+                              ? 'Ex.: 00.000.000/0000-00'
+                              : 'Ex.: 000.000.000-00'
+                          }
                           isRequired
+                          docType={(v: string) => handleDocType(v)}
                           disabled={isSubmitting}
                           isDisabled={isSubmitting}
                           {...field}
@@ -287,9 +318,9 @@ export function DataTableRowActions<TData>({
                       )}
                     />
 
-                    {errors.cpf && (
+                    {errors.document && (
                       <small className="text-red-500">
-                        {errors.cpf.message}
+                        {errors.document.message}
                       </small>
                     )}
                   </div>
@@ -369,7 +400,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="number"
                       control={control}
-                      defaultValue={selectedToEdit?.number || ''}
+                      defaultValue={selectedToEdit?.number}
                       render={({ field }) => (
                         <InputWithMask
                           format="#######"
@@ -388,7 +419,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="complement"
                       control={control}
-                      defaultValue={selectedToEdit?.complement || ''}
+                      defaultValue={selectedToEdit?.complement}
                       render={({ field }) => (
                         <InputText
                           label="Complemento"
@@ -481,15 +512,28 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="phone"
                       control={control}
-                      defaultValue={selectedToEdit?.phone || ''}
+                      defaultValue={selectedToEdit?.telefone || ''}
                       render={({ field }) => (
-                        <InputWithMask
-                          format="(##) #####-####"
+                        <InputFormatPhone
+                          defaultPhoneValue={
+                            responsavel.telefone.length === 14
+                              ? 'fixo'
+                              : 'celular'
+                          }
+                          format={
+                            phoneType === 'celular'
+                              ? '(##) # ####-####'
+                              : '(##) ####-####'
+                          }
                           mask="_"
-                          label="Telefone"
                           labelFor="phone"
-                          placeholder="Ex.: (22) 90000-0000"
+                          placeholder={
+                            phoneType === 'celular'
+                              ? 'Ex.: (21) 9 0000-0000'
+                              : 'Ex.: (21) 0000-0000'
+                          }
                           isRequired
+                          phoneType={(v: string) => handlePhoneType(v)}
                           disabled={isSubmitting}
                           isDisabled={isSubmitting}
                           {...field}
@@ -502,62 +546,6 @@ export function DataTableRowActions<TData>({
                         {errors.phone.message}
                       </small>
                     )}
-                  </div>
-
-                  <div className="col-span-full">
-                    <Controller
-                      name="modalType"
-                      control={control}
-                      defaultValue={selectedToEdit?.modalId || ''}
-                      render={({ field: { onChange, value } }) => (
-                        <SelectDropdown
-                          itemSelected={onChange}
-                          isRequired
-                          name="Tipo de Modal"
-                          label="Tipo de Modal"
-                          labelFor="modalType"
-                          items={types}
-                          isDisabled={isSubmitting}
-                          valueDf={value}
-                        />
-                      )}
-                    />
-
-                    {errors.modalType && (
-                      <small className="text-red-500">
-                        {errors.modalType.message}
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="col-span-full">
-                    <label
-                      htmlFor="notes"
-                      className={clsx(
-                        'block text-sm font-medium leading-6 text-gray-900',
-                        {
-                          'opacity-20': isSubmitting,
-                        },
-                      )}
-                    >
-                      Anotações:
-                    </label>
-
-                    <div className="mt-1">
-                      <Controller
-                        name="notes"
-                        control={control}
-                        defaultValue={selectedToEdit?.notes || ''}
-                        render={({ field }) => (
-                          <Textarea
-                            placeholder="Digite uma anotação..."
-                            className="placeholder:text-zinc-400"
-                            disabled={isSubmitting}
-                            {...field}
-                          />
-                        )}
-                      />
-                    </div>
                   </div>
                 </div>
 
@@ -592,11 +580,11 @@ export function DataTableRowActions<TData>({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Você está excluindo um permissionário!
+              Você está excluindo um responsável!
             </AlertDialogTitle>
 
             <AlertDialogDescription>
-              O permissionário{' '}
+              O responsável{' '}
               <span className="font-medium text-red-600">
                 {selectedToDelete?.nome}
               </span>{' '}
@@ -635,24 +623,11 @@ export function DataTableRowActions<TData>({
           <AlertDialogHeader>
             <div className="px-4 sm:px-0">
               <h3 className="text-base font-semibold leading-4 text-gray-900">
-                {permissionario.nome}
+                {responsavel.nome}
               </h3>
               <p className="mt-1 max-w-2xl text-sm leading-4 text-gray-500">
-                Todos os dados do(a) permissionário(a).
+                Todos os dados do(a) responsável.
               </p>
-              <small
-                className={clsx(
-                  'flex items-center justify-center sm:justify-start mt-1 gap-1 capitalize',
-                  {
-                    'text-emerald-500': permissionario.status === 'ativo',
-                    'text-blue-500': permissionario.status === 'pendente',
-                    'text-red-500': permissionario.status === 'inativo',
-                  },
-                )}
-              >
-                <Circle weight="fill" size={8} />
-                {permissionario.status}
-              </small>
             </div>
           </AlertDialogHeader>
 
@@ -663,16 +638,16 @@ export function DataTableRowActions<TData>({
                   Nome Completo
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {permissionario.nome}
+                  {responsavel.nome}
                 </dd>
               </div>
 
               <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                 <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  CPF
+                  CPF/CNPJ
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {permissionario.cpf}
+                  {responsavel.documento}
                 </dd>
               </div>
 
@@ -681,7 +656,7 @@ export function DataTableRowActions<TData>({
                   E-mail
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {permissionario.email}
+                  {responsavel.email}
                 </dd>
               </div>
 
@@ -690,7 +665,7 @@ export function DataTableRowActions<TData>({
                   Telefone
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {permissionario.phone}
+                  {responsavel.telefone}
                 </dd>
               </div>
 
@@ -699,31 +674,12 @@ export function DataTableRowActions<TData>({
                   Endereço
                 </dt>
                 <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {permissionario.place}
-                  {permissionario.number && `, ${permissionario.number}`}
-                  {permissionario.complement &&
-                    ` - ${permissionario.complement}`}
-                  {` - ${permissionario.neighborhood}`}
-                  {` - ${permissionario.city}`}
-                  {` - ${permissionario.cep}`}
-                </dd>
-              </div>
-
-              <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  Tipo de Modal
-                </dt>
-                <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {permissionario.modal}
-                </dd>
-              </div>
-
-              <div className="px-4 py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                <dt className="text-sm font-medium leading-4 sm:leading-6 text-gray-900">
-                  Anotações
-                </dt>
-                <dd className="mt-1 text-xs sm:text-sm leading-4 sm:leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                  {permissionario.notes}
+                  {responsavel.place}
+                  {responsavel.number && `, ${responsavel.number}`}
+                  {responsavel.complement && ` - ${responsavel.complement}`}
+                  {` - ${responsavel.neighborhood}`}
+                  {` - ${responsavel.city}`}
+                  {` - ${responsavel.cep}`}
                 </dd>
               </div>
             </dl>

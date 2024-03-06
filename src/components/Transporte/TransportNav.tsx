@@ -99,7 +99,7 @@ export function TransportNav() {
             <div className="flex pt-6 items-center">
               <button
                 type="button"
-                className="relative flex items-center gap-2 rounded-md bg-white text-gray-400 lg:hidden"
+                className="relative mb-4 lg:mt-0 flex items-center gap-2 rounded-md bg-white text-gray-400 lg:hidden"
                 onClick={() => setOpen(true)}
               >
                 <div>

@@ -85,10 +85,10 @@ export function MeioAmbienteNav() {
           className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
         >
           <div className="border-b border-gray-200">
-            <div className="flex py-4 items-center">
+            <div className="flex pt-6 items-center">
               <button
                 type="button"
-                className="relative flex items-center gap-2 rounded-md bg-white text-gray-400 lg:hidden"
+                className="relative mb-4 lg:mt-0 flex items-center gap-2 rounded-md bg-white text-gray-400 lg:hidden"
                 onClick={() => setOpen(true)}
               >
                 <div>

@@ -50,3 +50,21 @@ export const PermissionarioVanMapper = (permissionarios: any[]) => {
       }))
     : []
 }
+
+export const ManegersMapper = (manegers: any[]) => {
+  return manegers
+    ? manegers.map((maneger) => ({
+        id: maneger.id,
+        nome: maneger.name,
+        documento: maneger.document,
+        email: maneger.email,
+        telefone: maneger.phone,
+        place: maneger.place,
+        number: maneger.number || '',
+        complement: maneger.complement || '',
+        neighborhood: maneger.neighborhood,
+        city: maneger.city,
+        cep: maneger.cep,
+      }))
+    : []
+}

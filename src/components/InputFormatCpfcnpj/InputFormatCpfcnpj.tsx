@@ -10,6 +10,7 @@ type InputFormatCPFCNPJProps = {
   isRequired?: boolean
   isDisabled?: boolean
   docType: (value: string) => void
+  defaultDocumentValue?: string
 } & PatternFormatProps
 
 const InputFormatCPFCNPJ = forwardRef<
@@ -21,11 +22,14 @@ const InputFormatCPFCNPJ = forwardRef<
     isRequired = false,
     isDisabled = false,
     docType,
+    defaultDocumentValue = '',
     ...props
   }: InputFormatCPFCNPJProps,
   ref,
 ) {
-  const [selectedOption, setSelectedOption] = useState<string>('cpf')
+  const [selectedOption, setSelectedOption] = useState<string>(
+    defaultDocumentValue || 'cpf',
+  )
   const handleOptionChange = (option: string) => {
     setSelectedOption(option)
     docType(option)

@@ -124,13 +124,13 @@ model ConstructionManager {
   name           String
   document       String                  @unique
   place          String
-  number         String
-  complement     String
+  number         String?
+  complement     String?
   neighborhood   String
   city           String
   cep            String
   phone          String
-  email          String
+  email          String                  @unique
   type           ConstructionManagerType
   createdAt      DateTime                @default(now())
   EmbargoedWorks EmbargoedWorks[]
@@ -142,8 +142,8 @@ model EmbargoedWorks {
   embargoNumber         String
   embargoFile           String
   place                 String
-  number                String
-  complement            String
+  number                String?
+  complement            String?
   neighborhood          String
   city                  String
   cep                   String

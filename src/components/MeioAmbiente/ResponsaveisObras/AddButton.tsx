@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 'use client'
 
 import InputText from '@/components/InputText/InputText'
@@ -22,6 +23,7 @@ import { toast } from 'react-toastify'
 import * as z from 'zod'
 import { mutate } from 'swr'
 import InputFormatCPFCNPJ from '@/components/InputFormatCpfcnpj/InputFormatCpfcnpj'
+import InputFormatPhone from '@/components/InputFormatPhone/InputFormatPhone'
 
 const schema = z.object({
   name: z.string().nonempty('O campo Nome Completo é obrigatório.'),
@@ -39,7 +41,7 @@ const schema = z.object({
     .email('Informe um e-mail válido.'),
 })
 
-export type AmbulanteFormProps = z.infer<typeof schema>
+export type MeioAmbienteResponsavelFormProps = z.infer<typeof schema>
 
 export function AddButton() {
   const {
@@ -51,39 +53,13 @@ export function AddButton() {
     clearErrors,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<AmbulanteFormProps>({
+  } = useForm<MeioAmbienteResponsavelFormProps>({
     resolver: zodResolver(schema),
   })
 
   const [loading, setLoading] = useState(false)
 
   const [open, setOpen] = useState(false)
-
-  const onSubmit = useCallback(
-    async (data: AmbulanteFormProps) => {
-      const newdata = {
-        ...data,
-        name: data.name.toUpperCase(),
-        number: data.number ? data.number.trim() : null,
-        complement: data.complement ? data.complement.trim() : null,
-      }
-
-      await axios
-        .post('/api/transporte/permissionario-van', newdata)
-        .then((response) => {
-          setOpen(false)
-          reset()
-          toast.success(response.data.message)
-          mutate('/api/transporte/permissionario-van')
-        })
-        .catch((error) => {
-          error.response.data.errors.map(({ message }: { message: string }) => {
-            toast.error(message)
-          })
-        })
-    },
-    [reset],
-  )
 
   const handleGetAddress = async () => {
     setLoading(true)
@@ -118,6 +94,52 @@ export function AddButton() {
   const handleDocType = (value: string) => {
     setDocType(value)
   }
+
+  const [phoneType, setPhoneType] = useState('celular')
+  const handlePhoneType = (value: string) => {
+    setPhoneType(value)
+  }
+
+  const onSubmit = useCallback(
+    async (data: MeioAmbienteResponsavelFormProps) => {
+      let newData: any = data
+
+      if (data.number === '') {
+        const { number: noNumber, ...rest } = newData
+        newData = rest
+      } else {
+        newData = {
+          ...newData,
+          number: newData.number.trim(),
+        }
+      }
+
+      if (data.complement === '') {
+        const { complement: noComplement, ...rest } = newData
+        newData = rest
+      }
+
+      const allData = {
+        ...newData,
+        name: newData?.name.toUpperCase(),
+      }
+
+      await axios
+        .post('/api/meio-ambiente/responsavel-meio-ambiente', allData)
+        .then((response) => {
+          setOpen(false)
+          reset()
+          toast.success(response.data.message)
+          mutate('/api/meio-ambiente/responsavel-meio-ambiente')
+        })
+        .catch((error) => {
+          error.response.data.errors.map(({ message }: { message: string }) => {
+            toast.error(message)
+          })
+        })
+    },
+    [reset],
+  )
 
   return (
     <>
@@ -181,8 +203,8 @@ export function AddButton() {
                           labelFor="document"
                           placeholder={
                             docType === 'cnpj'
-                              ? '00.000.000/0000-00'
-                              : '000.000.000-00'
+                              ? 'Ex.: 00.000.000/0000-00'
+                              : 'Ex.: 000.000.000-00'
                           }
                           isRequired
                           docType={(v: string) => handleDocType(v)}
@@ -389,13 +411,21 @@ export function AddButton() {
                       control={control}
                       defaultValue=""
                       render={({ field }) => (
-                        <InputWithMask
-                          format="(##) #####-####"
+                        <InputFormatPhone
+                          format={
+                            phoneType === 'celular'
+                              ? '(##) # ####-####'
+                              : '(##) ####-####'
+                          }
                           mask="_"
-                          label="Telefone"
                           labelFor="phone"
-                          placeholder="Ex.: (22) 90000-0000"
+                          placeholder={
+                            phoneType === 'celular'
+                              ? 'Ex.: (21) 9 0000-0000'
+                              : 'Ex.: (21) 0000-0000'
+                          }
                           isRequired
+                          phoneType={(v: string) => handlePhoneType(v)}
                           disabled={isSubmitting}
                           isDisabled={isSubmitting}
                           {...field}

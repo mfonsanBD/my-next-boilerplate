@@ -1,21 +1,17 @@
 import { z } from 'zod'
 
-export const permissionarios = z.object({
+export const responsaveis = z.object({
   id: z.string(),
   nome: z.string(),
-  cpf: z.string(),
+  documento: z.string(),
   email: z.string(),
-  status: z.string(),
-  modal: z.string(),
-  modalId: z.string(),
-  cep: z.string().nullable(),
-  place: z.string().nullable(),
-  complement: z.string().nullable(),
-  number: z.string().nullable(),
-  neighborhood: z.string().nullable(),
-  city: z.string().nullable(),
-  phone: z.string().nullable(),
-  notes: z.string().nullable(),
+  telefone: z.string(),
+  place: z.string().optional(),
+  number: z.string().optional(),
+  complement: z.string().optional(),
+  neighborhood: z.string().optional(),
+  city: z.string().optional(),
+  cep: z.string().optional(),
 })
 
-export type Permissionarios = z.infer<typeof permissionarios>
+export type Responsaveis = z.infer<typeof responsaveis>
