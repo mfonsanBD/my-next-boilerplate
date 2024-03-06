@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 'use client'
 
 import { Row } from '@tanstack/react-table'
@@ -41,23 +42,24 @@ import SelectDropdown from '@/components/SelectDropdown/SelectDropdown'
 import { Textarea } from '@/components/ui/textarea'
 import { SelectMapper } from '@/utils/mappers'
 import Link from 'next/link'
+import { ChangeFileToBase64 } from '@/utils/helpers'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 
 const schema = z.object({
-  name: z.string().nonempty('O campo Nome Completo é obrigatório.'),
-  cpf: z.string().nonempty('O campo CPF é obrigatório.'),
+  constructionManagerId: z
+    .string()
+    .nonempty('O campo Responsável da Obra é obrigatório.'),
+  embargoNumber: z
+    .string()
+    .nonempty('O campo Número do Auto de Embargo é obrigatório.'),
   cep: z.string().nonempty('O campo CEP é obrigatório.'),
   place: z.string().nonempty('O campo Logradouro é obrigatório.'),
   complement: z.string().optional(),
   number: z.string().optional(),
   neighborhood: z.string().nonempty('O campo Bairro é obrigatório.'),
   city: z.string().nonempty('O campo Cidade é obrigatório.'),
-  phone: z.string().nonempty('O campo Telefone é obrigatório'),
-  email: z
-    .string()
-    .nonempty('O campo e-mail é obrigatório.')
-    .email('Informe um e-mail válido.'),
-  modalType: z.string().nonempty('O campo Tipo de Modal é obrigatório'),
-  notes: z.string().optional(),
+  file: z.any().optional(),
 })
 
 type FormProps = z.infer<typeof schema>
@@ -73,8 +75,11 @@ const fetcher = (url: string) => axios.get(url).then((res) => res.data)
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const { data } = useSWR('/api/modaltype', fetcher)
-  const types = SelectMapper(data?.modalTypes)
+  const { data } = useSWR(
+    '/api/meio-ambiente/responsavel-meio-ambiente',
+    fetcher,
+  )
+  const managers = SelectMapper(data?.meioAmbienteManagers)
 
   const [openEdit, setOpenEdit] = useState(false)
   const [selectedToEdit, setSelectedToEdit] = useState<SelectedData | null>(
@@ -107,6 +112,7 @@ export function DataTableRowActions<TData>({
     setError,
     clearErrors,
     setValue,
+    register,
     formState: { errors, isSubmitting },
   } = useForm<FormProps>({
     resolver: zodResolver(schema),
@@ -117,24 +123,52 @@ export function DataTableRowActions<TData>({
     async (data: any) => {
       setLoading(true)
 
-      const newdata = {
-        ...data,
-        name: data.name.toUpperCase(),
-        number: data.number ? data.number.trim() : null,
-        complement: data.complement ? data.complement.trim() : null,
-        notes: data.notes ? data.notes.trim() : null,
-        modalTypeId: data.modalType,
-        id: embargo.id,
+      let newData: any = { ...data, id: embargo.id }
+
+      if (data.number === '') {
+        const { number: noNumber, ...rest } = newData
+        newData = rest
+      } else {
+        newData = {
+          ...newData,
+          number: newData.number.trim(),
+        }
       }
-      // eslint-disable-next-line no-unused-vars
-      const { modalType: newModalType, ...rest } = newdata
+
+      if (data.complement === '') {
+        const { complement: noComplement, ...rest } = newData
+        newData = rest
+      }
+
+      let allData: any
+
+      if (data.file[0]) {
+        await axios
+          .post('/api/upload-file', {
+            file: await ChangeFileToBase64(data.file[0]),
+          })
+          .then(
+            (result) =>
+              (allData = {
+                ...newData,
+                embargoFile: result?.data,
+              }),
+          )
+      } else {
+        allData = {
+          ...newData,
+          embargoFile: '',
+        }
+      }
+
+      const { file: noFile, ...rest } = allData
 
       await axios
-        .patch('/api/maio-ambiente/obras-embargadas', rest)
+        .patch('/api/meio-ambiente/obras-embargadas', rest)
         .then((response) => {
           setOpenEdit(false)
           toast.success(response.data.message)
-          mutate('/api/maio-ambiente/obras-embargadas')
+          mutate('/api/meio-ambiente/obras-embargadas')
         })
         .catch((error) => {
           toast.error(error.response.data.message)
@@ -247,63 +281,11 @@ export function DataTableRowActions<TData>({
             <ScrollArea className="h-[600px] sm:h-[500px] 2xl:h-fit w-full">
               <div className="space-y-4 pr-3">
                 <div className="grid grid-cols-1 lg:grid-cols-4 items-end gap-4">
-                  <div className="sm:col-span-2">
-                    <Controller
-                      name="name"
-                      control={control}
-                      defaultValue={selectedToEdit?.cep || ''}
-                      render={({ field }) => (
-                        <InputText
-                          label="Nome Completo"
-                          labelFor="name"
-                          placeholder="Ex.: João da Silva"
-                          isRequired
-                          disabled={isSubmitting}
-                          isDisabled={isSubmitting}
-                          {...field}
-                        />
-                      )}
-                    />
-
-                    {errors.name && (
-                      <small className="text-red-500">
-                        {errors.name.message}
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <Controller
-                      name="cpf"
-                      control={control}
-                      defaultValue={selectedToEdit?.cep || ''}
-                      render={({ field }) => (
-                        <InputWithMask
-                          format="###.###.###-##"
-                          mask="_"
-                          label="CPF"
-                          labelFor="cpf"
-                          placeholder="Ex.: 000.000.000-00"
-                          isRequired
-                          disabled={isSubmitting}
-                          isDisabled={isSubmitting}
-                          {...field}
-                        />
-                      )}
-                    />
-
-                    {errors.cpf && (
-                      <small className="text-red-500">
-                        {errors.cpf.message}
-                      </small>
-                    )}
-                  </div>
-
                   <div className="sm:col-span-3">
                     <Controller
                       name="cep"
                       control={control}
-                      defaultValue={selectedToEdit?.cep || ''}
+                      defaultValue={selectedToEdit?.cep as string}
                       render={({ field }) => (
                         <InputWithMask
                           format="#####-###"
@@ -349,7 +331,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="place"
                       control={control}
-                      defaultValue={selectedToEdit?.place || ''}
+                      defaultValue={selectedToEdit?.place as string}
                       render={({ field }) => (
                         <InputText
                           label="Logradouro"
@@ -374,7 +356,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="number"
                       control={control}
-                      defaultValue={selectedToEdit?.number || ''}
+                      defaultValue={(selectedToEdit?.number as string) || ''}
                       render={({ field }) => (
                         <InputWithMask
                           format="#######"
@@ -393,7 +375,9 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="complement"
                       control={control}
-                      defaultValue={selectedToEdit?.complement || ''}
+                      defaultValue={
+                        (selectedToEdit?.complement as string) || ''
+                      }
                       render={({ field }) => (
                         <InputText
                           label="Complemento"
@@ -411,7 +395,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="neighborhood"
                       control={control}
-                      defaultValue={selectedToEdit?.neighborhood || ''}
+                      defaultValue={selectedToEdit?.neighborhood as string}
                       render={({ field }) => (
                         <InputText
                           label="Bairro"
@@ -436,7 +420,7 @@ export function DataTableRowActions<TData>({
                     <Controller
                       name="city"
                       control={control}
-                      defaultValue={selectedToEdit?.city || ''}
+                      defaultValue={selectedToEdit?.city as string}
                       render={({ field }) => (
                         <InputText
                           label="Cidade"
@@ -457,117 +441,86 @@ export function DataTableRowActions<TData>({
                     )}
                   </div>
 
-                  <div className="sm:col-span-2">
-                    <Controller
-                      name="email"
-                      control={control}
-                      defaultValue={selectedToEdit?.cep || ''}
-                      render={({ field }) => (
-                        <InputText
-                          label="E-mail"
-                          labelFor="email"
-                          placeholder="Ex.: joaodasilva@gmail.com"
-                          isRequired
-                          disabled={isSubmitting}
-                          isDisabled={isSubmitting}
-                          {...field}
-                        />
-                      )}
-                    />
-
-                    {errors.email && (
-                      <small className="text-red-500">
-                        {errors.email.message}
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <Controller
-                      name="phone"
-                      control={control}
-                      defaultValue={selectedToEdit?.cep || ''}
-                      render={({ field }) => (
-                        <InputWithMask
-                          format="(##) #####-####"
-                          mask="_"
-                          label="Telefone"
-                          labelFor="phone"
-                          placeholder="Ex.: (22) 90000-0000"
-                          isRequired
-                          disabled={isSubmitting}
-                          isDisabled={isSubmitting}
-                          {...field}
-                        />
-                      )}
-                    />
-
-                    {errors.phone && (
-                      <small className="text-red-500">
-                        {errors.phone.message}
-                      </small>
-                    )}
-                  </div>
-
                   <div className="col-span-full">
                     <Controller
-                      name="modalType"
+                      name="constructionManagerId"
                       control={control}
-                      defaultValue={selectedToEdit?.cep || ''}
+                      defaultValue={selectedToEdit?.responsavelId as string}
                       render={({ field: { onChange, value } }) => (
                         <SelectDropdown
+                          valueDf={value}
                           itemSelected={onChange}
                           isRequired
-                          name="Tipo de Modal"
-                          label="Tipo de Modal"
-                          labelFor="modalType"
-                          items={types}
+                          name="responsável da obra"
+                          label="Responsável da Obra"
+                          labelFor="constructionManagerId"
+                          items={managers}
                           isDisabled={isSubmitting}
-                          valueDf={value}
                         />
                       )}
                     />
 
-                    {errors.modalType && (
+                    {errors.constructionManagerId && (
                       <small className="text-red-500">
-                        {errors.modalType.message}
+                        {errors.constructionManagerId.message}
                       </small>
                     )}
                   </div>
 
                   <div className="col-span-full">
-                    <label
-                      htmlFor="notes"
+                    <Controller
+                      name="embargoNumber"
+                      control={control}
+                      defaultValue={selectedToEdit?.numero as string}
+                      render={({ field }) => (
+                        <InputText
+                          label="Número do Auto de Embargo"
+                          labelFor="embargoNumber"
+                          placeholder="Ex.: 00000000000"
+                          isRequired
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+
+                    {errors.embargoNumber && (
+                      <small className="text-red-500">
+                        {errors.embargoNumber.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="col-span-full">
+                    <Label
+                      htmlFor="embargoedFile"
                       className={clsx(
-                        'block text-sm font-medium leading-6 text-gray-900',
+                        'focus:outline-none focus-visible:ring-0',
                         {
                           'opacity-20': isSubmitting,
                         },
                       )}
                     >
-                      Anotações:
-                    </label>
+                      Cópia do Autor de Embargo:
+                    </Label>
 
-                    <div className="mt-1">
-                      <Controller
-                        name="notes"
-                        control={control}
-                        defaultValue={selectedToEdit?.cep || ''}
-                        render={({ field }) => (
-                          <Textarea
-                            placeholder="Digite uma anotação..."
-                            className="placeholder:text-zinc-400"
-                            disabled={isSubmitting}
-                            {...field}
-                          />
-                        )}
-                      />
-                    </div>
+                    <Input
+                      id="embargoedFile"
+                      type="file"
+                      {...register('file')}
+                      className="mt-1 focus:outline-none focus-visible:ring-0 py-3 h-fit cursor-pointer border-zinc-300"
+                      accept="application/pdf"
+                      disabled={isSubmitting}
+                    />
                   </div>
                 </div>
 
                 <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isSubmitting}>
+                  <AlertDialogCancel
+                    disabled={isSubmitting}
+                    className="focus:outline-none focus-visible:ring-0"
+                  >
                     Cancelar
                   </AlertDialogCancel>
                   <Button type="submit" disabled={isSubmitting}>
@@ -576,7 +529,7 @@ export function DataTableRowActions<TData>({
                         <CircleNotch size={24} className="animate-spin" />
                       </div>
                     ) : (
-                      'Alterar'
+                      'Adicionar'
                     )}
                   </Button>
                 </AlertDialogFooter>

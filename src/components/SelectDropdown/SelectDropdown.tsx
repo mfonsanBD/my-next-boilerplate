@@ -78,8 +78,8 @@ export default function SelectDropdown({
             disabled={isDisabled}
             className={clsx(
               'w-full justify-between py-6 font-normal border-zinc-300',
-              { 'text-zinc-400': !value },
-              { 'text-zinc-600': value },
+              { 'text-zinc-400': !value || !valueDf },
+              { 'text-zinc-800': value || valueDf },
             )}
           >
             {valueDf

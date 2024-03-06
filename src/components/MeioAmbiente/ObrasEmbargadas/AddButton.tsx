@@ -69,7 +69,7 @@ export function AddButton() {
     '/api/meio-ambiente/responsavel-meio-ambiente',
     fetcher,
   )
-  const types = SelectMapper(data?.meioAmbienteManagers)
+  const managers = SelectMapper(data?.meioAmbienteManagers)
 
   const {
     getValues,
@@ -361,7 +361,7 @@ export function AddButton() {
                           name="responsável da obra"
                           label="Responsável da Obra"
                           labelFor="constructionManagerId"
-                          items={types}
+                          items={managers}
                           isDisabled={isSubmitting}
                         />
                       )}
