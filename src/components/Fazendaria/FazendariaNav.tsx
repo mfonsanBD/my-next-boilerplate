@@ -97,7 +97,7 @@ export function FazendariaNav() {
                   <List className="h-6 w-6" aria-hidden="true" />
                 </div>
 
-                <p>Menu Meio Ambiente</p>
+                <p>Menu Fazendária</p>
               </button>
 
               {/* Flyout menus */}
