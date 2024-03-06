@@ -188,6 +188,77 @@ export function AddButton() {
             <ScrollArea className="h-[600px] sm:h-[500px] 2xl:h-fit w-full">
               <div className="space-y-4 pr-3">
                 <div className="grid grid-cols-1 lg:grid-cols-4 items-end gap-4">
+                  <div className="col-span-full">
+                    <Controller
+                      name="constructionManagerId"
+                      control={control}
+                      defaultValue=""
+                      render={({ field: { onChange } }) => (
+                        <SelectDropdown
+                          itemSelected={onChange}
+                          isRequired
+                          name="responsável da obra"
+                          label="Responsável da Obra"
+                          labelFor="constructionManagerId"
+                          items={managers}
+                          isDisabled={isSubmitting}
+                        />
+                      )}
+                    />
+
+                    {errors.constructionManagerId && (
+                      <small className="text-red-500">
+                        {errors.constructionManagerId.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="col-span-2">
+                    <Controller
+                      name="embargoNumber"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <InputText
+                          label="Número do Auto de Embargo"
+                          labelFor="embargoNumber"
+                          placeholder="Ex.: 00000000000"
+                          isRequired
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+
+                    {errors.embargoNumber && (
+                      <small className="text-red-500">
+                        {errors.embargoNumber.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="col-span-2">
+                    <Label htmlFor="embargoedFile">
+                      Cópia do Autor de Embargo:{' '}
+                      <span className="text-red-500">*</span>
+                    </Label>
+
+                    <Input
+                      id="embargoedFile"
+                      type="file"
+                      {...register('file')}
+                      className="mt-1 focus:outline-none focus-visible:ring-0 py-3 h-fit cursor-pointer border-zinc-300"
+                      accept="application/pdf"
+                    />
+
+                    {errors.file && (
+                      <small className="text-red-500">
+                        {errors.file.message?.toString()}
+                      </small>
+                    )}
+                  </div>
+
                   <div className="sm:col-span-3">
                     <Controller
                       name="cep"
@@ -342,77 +413,6 @@ export function AddButton() {
                     {errors.city && (
                       <small className="text-red-500">
                         {errors.city.message}
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="col-span-full">
-                    <Controller
-                      name="constructionManagerId"
-                      control={control}
-                      defaultValue=""
-                      render={({ field: { onChange } }) => (
-                        <SelectDropdown
-                          itemSelected={onChange}
-                          isRequired
-                          name="responsável da obra"
-                          label="Responsável da Obra"
-                          labelFor="constructionManagerId"
-                          items={managers}
-                          isDisabled={isSubmitting}
-                        />
-                      )}
-                    />
-
-                    {errors.constructionManagerId && (
-                      <small className="text-red-500">
-                        {errors.constructionManagerId.message}
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="col-span-full">
-                    <Controller
-                      name="embargoNumber"
-                      control={control}
-                      defaultValue=""
-                      render={({ field }) => (
-                        <InputText
-                          label="Número do Auto de Embargo"
-                          labelFor="embargoNumber"
-                          placeholder="Ex.: 00000000000"
-                          isRequired
-                          disabled={isSubmitting}
-                          isDisabled={isSubmitting}
-                          {...field}
-                        />
-                      )}
-                    />
-
-                    {errors.embargoNumber && (
-                      <small className="text-red-500">
-                        {errors.embargoNumber.message}
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="col-span-full">
-                    <Label htmlFor="embargoedFile">
-                      Cópia do Autor de Embargo:{' '}
-                      <span className="text-red-500">*</span>
-                    </Label>
-
-                    <Input
-                      id="embargoedFile"
-                      type="file"
-                      {...register('file')}
-                      className="mt-1 focus:outline-none focus-visible:ring-0 py-3 h-fit cursor-pointer border-zinc-300"
-                      accept="application/pdf"
-                    />
-
-                    {errors.file && (
-                      <small className="text-red-500">
-                        {errors.file.message?.toString()}
                       </small>
                     )}
                   </div>

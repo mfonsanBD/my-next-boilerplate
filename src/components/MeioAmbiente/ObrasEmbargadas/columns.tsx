@@ -12,11 +12,7 @@ export const columns: ColumnDef<EmbargoedWorks>[] = [
   {
     accessorKey: 'numero',
     header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title="Número do Auto de Embargo
-      "
-      />
+      <DataTableColumnHeader column={column} title="N° Auto de Embargo" />
     ),
     cell: ({ row }) => {
       return (
@@ -31,7 +27,7 @@ export const columns: ColumnDef<EmbargoedWorks>[] = [
   {
     accessorKey: 'responsavel',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Responsável da Obra" />
+      <DataTableColumnHeader column={column} title="Responsável" />
     ),
     cell: ({ row }) => {
       return (
@@ -47,10 +43,7 @@ export const columns: ColumnDef<EmbargoedWorks>[] = [
   {
     accessorKey: 'telefone',
     header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title="Telefone do Responsável da Obra"
-      />
+      <DataTableColumnHeader column={column} title="Telefone do Responsável" />
     ),
     cell: ({ row }) => {
       return (
@@ -66,7 +59,7 @@ export const columns: ColumnDef<EmbargoedWorks>[] = [
   {
     accessorKey: 'file',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Cópia do Auto de Embargo" />
+      <DataTableColumnHeader column={column} title="Cópia Auto de Embargo" />
     ),
     cell: ({ row }) => {
       return (
