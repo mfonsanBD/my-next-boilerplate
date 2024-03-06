@@ -40,25 +40,42 @@ export async function PATCH(request: NextRequest) {
   const data = await request.json()
 
   try {
-    const embargo = await db.embargoedWorks.findFirst({
+    const work = await db.worksInProgress.findFirst({
       where: {
         id: data.id,
       },
     })
 
-    let file: string
+    let noticeFile: string
 
-    if (data.embargoFile === '') {
-      file = embargo?.embargoFile as string
+    if (data.infractionNoticeFile === '') {
+      noticeFile = work?.infractionNoticeFile as string
     } else {
-      file = data.embargoFile
+      noticeFile = data.infractionNoticeFile
     }
 
-    const { embargoFile: noEmbargoFile, id: noId, ...rest } = data
+    let intimationFile: string
 
-    const allData = { ...rest, embargoFile: file }
+    if (data.intimationFile === '') {
+      intimationFile = work?.intimationFile as string
+    } else {
+      intimationFile = data.intimationFile
+    }
 
-    await db.embargoedWorks.update({
+    const {
+      infractionNoticeFile: noInfractionNoticeFile,
+      intimationFile: noIntimationFile,
+      id: noId,
+      ...rest
+    } = data
+
+    const allData = {
+      ...rest,
+      infractionNoticeFile: noticeFile,
+      intimationFile: intimationFile,
+    }
+
+    await db.worksInProgress.update({
       where: {
         id: data.id,
       },

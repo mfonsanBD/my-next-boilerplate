@@ -50,16 +50,20 @@ const schema = z.object({
   constructionManagerId: z
     .string()
     .nonempty('O campo Responsável da Obra é obrigatório.'),
-  embargoNumber: z
+  infractionNoticeNumber: z
     .string()
-    .nonempty('O campo Número do Auto de Embargo é obrigatório.'),
+    .nonempty('O campo Número do Auto de Infração é obrigatório.'),
+  intimationNumber: z
+    .string()
+    .nonempty('O campo Número da Intimação é obrigatório.'),
   cep: z.string().nonempty('O campo CEP é obrigatório.'),
   place: z.string().nonempty('O campo Logradouro é obrigatório.'),
   complement: z.string().optional(),
   number: z.string().optional(),
   neighborhood: z.string().nonempty('O campo Bairro é obrigatório.'),
   city: z.string().nonempty('O campo Cidade é obrigatório.'),
-  file: z.any().optional(),
+  infractionNoticeFile: z.any().optional(),
+  intimationFile: z.any().optional(),
 })
 
 type FormProps = z.infer<typeof schema>
@@ -76,7 +80,7 @@ export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
   const { data } = useSWR('/api/urbanismo/responsavel', fetcher)
-  const managers = SelectMapper(data?.meioAmbienteManagers)
+  const managers = SelectMapper(data?.urbanismoManagers)
 
   const [openEdit, setOpenEdit] = useState(false)
   const [selectedToEdit, setSelectedToEdit] = useState<SelectedData | null>(
@@ -137,35 +141,52 @@ export function DataTableRowActions<TData>({
         newData = rest
       }
 
-      let allData: any
+      let allData: any = newData
 
-      if (data.file[0]) {
+      if (data.infractionNoticeFile[0]) {
         await axios
           .post('/api/upload-file', {
-            file: await ChangeFileToBase64(data.file[0]),
+            file: await ChangeFileToBase64(data.infractionNoticeFile[0]),
           })
           .then(
             (result) =>
               (allData = {
-                ...newData,
-                embargoFile: result?.data,
+                ...allData,
+                infractionNoticeFile: result?.data,
               }),
           )
       } else {
         allData = {
-          ...newData,
-          embargoFile: '',
+          ...allData,
+          infractionNoticeFile: '',
         }
       }
 
-      const { file: noFile, ...rest } = allData
+      if (data.intimationFile[0]) {
+        await axios
+          .post('/api/upload-file', {
+            file: await ChangeFileToBase64(data.intimationFile[0]),
+          })
+          .then(
+            (result) =>
+              (allData = {
+                ...allData,
+                intimationFile: result?.data,
+              }),
+          )
+      } else {
+        allData = {
+          ...allData,
+          intimationFile: '',
+        }
+      }
 
       await axios
-        .patch('/api/meio-ambiente/obras-embargadas', rest)
+        .patch('/api/urbanismo/obras-em-execucao', allData)
         .then((response) => {
           setOpenEdit(false)
           toast.success(response.data.message)
-          mutate('/api/meio-ambiente/obras-embargadas')
+          mutate('/api/urbanismo/obras-em-execucao')
         })
         .catch((error) => {
           toast.error(error.response.data.message)
@@ -271,13 +292,143 @@ export function DataTableRowActions<TData>({
       >
         <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Alterar Permissionário</AlertDialogTitle>
+            <AlertDialogTitle>Alterar Obra</AlertDialogTitle>
           </AlertDialogHeader>
 
           <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
             <ScrollArea className="h-[600px] sm:h-[500px] 2xl:h-fit w-full">
               <div className="space-y-4 pr-3">
-                <div className="grid grid-cols-1 lg:grid-cols-4 items-end gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-4 items-start gap-4">
+                  <div className="col-span-full">
+                    <Controller
+                      name="constructionManagerId"
+                      control={control}
+                      defaultValue={selectedToEdit?.responsavelId as string}
+                      render={({ field: { onChange, value } }) => (
+                        <SelectDropdown
+                          itemSelected={onChange}
+                          valueDf={value}
+                          isRequired
+                          name="responsável da obra"
+                          label="Responsável da Obra"
+                          labelFor="constructionManagerId"
+                          items={managers}
+                          isDisabled={isSubmitting}
+                        />
+                      )}
+                    />
+
+                    {errors.constructionManagerId && (
+                      <small className="text-red-500">
+                        {errors.constructionManagerId.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <Controller
+                      name="infractionNoticeNumber"
+                      control={control}
+                      defaultValue={
+                        selectedToEdit?.numeroAutoInfracao as string
+                      }
+                      render={({ field }) => (
+                        <InputText
+                          label="Número do Auto de Infração"
+                          labelFor="infractionNoticeNumber"
+                          placeholder="Ex.: 00000000000"
+                          isRequired
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+
+                    {errors.infractionNoticeNumber && (
+                      <small className="text-red-500">
+                        {errors.infractionNoticeNumber.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <Label
+                      htmlFor="infractionNoticeFile"
+                      className={clsx({
+                        'opacity-20': isSubmitting,
+                      })}
+                    >
+                      Cópia do Auto de Infração:
+                    </Label>
+
+                    <Input
+                      id="infractionNoticeFile"
+                      type="file"
+                      disabled={isSubmitting}
+                      {...register('infractionNoticeFile')}
+                      className="mt-1 focus:outline-none focus-visible:ring-0 py-3 h-fit cursor-pointer border-zinc-300"
+                      accept="application/pdf"
+                    />
+
+                    {errors.infractionNoticeFile && (
+                      <small className="text-red-500">
+                        {errors.infractionNoticeFile.message?.toString()}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <Controller
+                      name="intimationNumber"
+                      control={control}
+                      defaultValue={selectedToEdit?.numeroIntimacao as string}
+                      render={({ field }) => (
+                        <InputText
+                          label="Número da Intimação"
+                          labelFor="intimationNumber"
+                          placeholder="Ex.: 00000000000"
+                          isRequired
+                          disabled={isSubmitting}
+                          isDisabled={isSubmitting}
+                          {...field}
+                        />
+                      )}
+                    />
+
+                    {errors.intimationNumber && (
+                      <small className="text-red-500">
+                        {errors.intimationNumber.message}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <Label
+                      htmlFor="intimationFile"
+                      className={clsx({
+                        'opacity-20': isSubmitting,
+                      })}
+                    >
+                      Cópia da Intimação:
+                    </Label>
+
+                    <Input
+                      id="intimationFile"
+                      type="file"
+                      disabled={isSubmitting}
+                      {...register('intimationFile')}
+                      className="mt-1 focus:outline-none focus-visible:ring-0 py-3 h-fit cursor-pointer border-zinc-300"
+                      accept="application/pdf"
+                    />
+
+                    {errors.intimationFile && (
+                      <small className="text-red-500">
+                        {errors.intimationFile.message?.toString()}
+                      </small>
+                    )}
+                  </div>
+
                   <div className="sm:col-span-3">
                     <Controller
                       name="cep"
@@ -305,12 +456,10 @@ export function DataTableRowActions<TData>({
                     )}
                   </div>
 
-                  <div
-                    className={clsx('sm:col-span-1', { 'mb-6': errors.cep })}
-                  >
+                  <div className="sm:col-span-1">
                     <Button
                       type="button"
-                      className="w-full"
+                      className="w-full py-6"
                       disabled={loading}
                       onClick={() => handleGetAddress()}
                     >
@@ -437,89 +586,10 @@ export function DataTableRowActions<TData>({
                       </small>
                     )}
                   </div>
-
-                  <div className="col-span-full">
-                    <Controller
-                      name="constructionManagerId"
-                      control={control}
-                      defaultValue={selectedToEdit?.responsavelId as string}
-                      render={({ field: { onChange, value } }) => (
-                        <SelectDropdown
-                          valueDf={value}
-                          itemSelected={onChange}
-                          isRequired
-                          name="responsável da obra"
-                          label="Responsável da Obra"
-                          labelFor="constructionManagerId"
-                          items={managers}
-                          isDisabled={isSubmitting}
-                        />
-                      )}
-                    />
-
-                    {errors.constructionManagerId && (
-                      <small className="text-red-500">
-                        {errors.constructionManagerId.message}
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="col-span-full">
-                    <Controller
-                      name="embargoNumber"
-                      control={control}
-                      defaultValue={
-                        selectedToEdit?.numeroAutoInfracao as string
-                      }
-                      render={({ field }) => (
-                        <InputText
-                          label="Número do Auto de Embargo"
-                          labelFor="embargoNumber"
-                          placeholder="Ex.: 00000000000"
-                          isRequired
-                          disabled={isSubmitting}
-                          isDisabled={isSubmitting}
-                          {...field}
-                        />
-                      )}
-                    />
-
-                    {errors.embargoNumber && (
-                      <small className="text-red-500">
-                        {errors.embargoNumber.message}
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="col-span-full">
-                    <Label
-                      htmlFor="embargoedFile"
-                      className={clsx(
-                        'focus:outline-none focus-visible:ring-0',
-                        {
-                          'opacity-20': isSubmitting,
-                        },
-                      )}
-                    >
-                      Cópia do Autor de Embargo:
-                    </Label>
-
-                    <Input
-                      id="embargoedFile"
-                      type="file"
-                      {...register('file')}
-                      className="mt-1 focus:outline-none focus-visible:ring-0 py-3 h-fit cursor-pointer border-zinc-300"
-                      accept="application/pdf"
-                      disabled={isSubmitting}
-                    />
-                  </div>
                 </div>
 
                 <AlertDialogFooter>
-                  <AlertDialogCancel
-                    disabled={isSubmitting}
-                    className="focus:outline-none focus-visible:ring-0"
-                  >
+                  <AlertDialogCancel disabled={isSubmitting}>
                     Cancelar
                   </AlertDialogCancel>
                   <Button type="submit" disabled={isSubmitting}>
