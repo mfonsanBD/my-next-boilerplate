@@ -28,7 +28,7 @@ export const authOptions: AuthOptions = {
         })
 
         if (!existingUser) {
-          throw new Error('O e-mail está incorreto ou não existe.')
+          throw new Error('O e-mail está incorreto ou usuário não existe.')
         }
 
         const passwordMatch = await compare(password, existingUser.password)
@@ -37,13 +37,9 @@ export const authOptions: AuthOptions = {
           throw new Error('A senha está incorreta.')
         }
 
-        if (existingUser.status === 'pendente') {
-          throw new Error('Seu usuário está pendente de autorização.')
-        }
-
         if (existingUser.status === 'inativo') {
           throw new Error(
-            'Seu usuário está inativo. Entre em contato com o administrador da associação para reativar.',
+            'Seu usuário está inativo. Entre em contato com o administrador para reativar sua conta.',
           )
         }
 
