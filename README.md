@@ -29,7 +29,7 @@ Obs.: Caso dê algum erro na conexão do prisma com o banco de dados use a Conne
 
 ```bash
 # Exemplo
-DATABASE_URL=postgres://[YOUR-USERNAME]:[YOUR-PASSWORD]@[YOUR-HOST].supabase.com
+DATABASE_URL=postgres://[YOUR-USER]:[YOUR-PASSWORD]@[YOUR-HOST].supabase.com
 
 # Crie a primeira migration para enviar suas tabelas para o banco de dados
 # Troque migration_name pelo nome de sua preferência
