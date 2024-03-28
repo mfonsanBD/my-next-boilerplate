@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+<p align="center">
+  <a href="https://nextjs.org/">
+    <img width="40%" src="https://static-00.iconduck.com/assets.00/nextjs-icon-2048x1234-pqycciiu.png">
+  </a>
+  BOILERPLATE
+</p>
 
-## Getting Started
+## Inicialização
 
-First, run the development server:
+Primeiro, rode o código abaixo para instalar os pacotes do projeto:
 
 ```bash
-npm run dev
+npm install
 # or
-yarn dev
+yarn add
 # or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Prisma 💾
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Crie sua conta e seu projeto no [supabase](https://supabase.com/) para ter um banco de dados PostgresQL
+- Abra o projeto, vá em: Project Settings > Database Settings
+- Copie a Connection String e cole em DATABASE_URL no arquivo .env
+- Envie suas tabelas criadas em schema.prisma automaticamente para o seu banco de dados
+- Acompanhe os dados do seu banco em uma interface do Prisma
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Obs.: Caso dê algum erro na conexão do prisma com o banco de dados use a Connection string da seguinte maneira: postgres://[YOUR-USER]:[YOUR-PASSWORD]@[YOUR-HOST].supabase.com
 
-## Learn More
+```bash
+# Exemplo
+DATABASE_URL=postgres://[YOUR-USERNAME]:[YOUR-PASSWORD]@[YOUR-HOST].supabase.com
 
-To learn more about Next.js, take a look at the following resources:
+# Crie a primeira migration para enviar suas tabelas para o banco de dados
+# Troque migration_name pelo nome de sua preferência
+npx prisma migrate dev --name migration_name
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Rode o código abaixo para garantir o os types mais recentes do seu banco
+npx prisma generate
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+# Rode o código abaixo para abrir o banco de dados com o Prisma
+npx prisma studio
+```
 
-## Deploy on Vercel
+## Next-Auth 🔐
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Aqui você precisa inserir um token ao NEXTAUTH_SECRET no arquivo .env para gerar a autorização e receber os dados do usuário.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Para gerar o secret token faça o seguinte:
+
+```bash
+# Gerar pelo Powershell
+[System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("minha_senha_secreta"))
+
+# Gerar pelo Ubuntu ou MacOS
+echo -n "minha_senha_secreta" | base64
+
+# Exemplo
+NEXTAUTH_SECRET=[TOKEN]
+```
+
+[Gerar Secret Token na Internet](https://generate-secret.vercel.app/32)
+
+## Plop 🔧
+
+O plop é uma ferramenta que automatiza a criação de componentes/páginas a partir de modelos definidos, verifique na pasta "generators/templates".
+
+```bash
+# Exemplo de como criar rapidamente um componente padrão (componente - story - teste)
+yarn generate:component NomeDoComponente
+
+# Exemplo de como criar rapidamente uma página
+yarn generate:template NomeDaPágina
+```
+
+## Storybook 🎨
+Biblioteca boa para design/documentação dos componentes criados no projeto.
+
+```bash
+# Para visualizar os stories criados
+yarn storybook
+```
+
+## Commit Lint 💬
+
+O CommitLint serve para verificar se a mensagem de commit que escrevemos realmente está dentro dos padrões pré-definidos pela Conventional Commits
+
+```bash
+# padrão de commit
+[plataforma] - [tipo]: mensagem
+```
+
+##### Plataformas:
+- Development
+- Cloud
+- QA
+
+##### Tipos:
+- build
+- chore
+- ci
+- docs
+- feature
+- bugfix
+- perf
+- refactor
+- revert
+- style
+- test
+- translation
+- security
