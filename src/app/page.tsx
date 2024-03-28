@@ -1,7 +1,5 @@
+import Heading from '@/components/Heading/Heading'
+
 export default function Home() {
-  return (
-    <div>
-      <h1>Home</h1>
-    </div>
-  )
+  return <Heading>Heading</Heading>
 }
