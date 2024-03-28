@@ -1,8 +1,8 @@
 /* eslint-disable no-unreachable */
 import { AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { compare } from 'bcrypt'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
+import { compare } from 'bcrypt'
 import { db } from './prisma'
 
 export const authOptions: AuthOptions = {
